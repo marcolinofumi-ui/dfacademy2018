@@ -420,7 +420,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 12 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 14 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -499,14 +499,30 @@ function matchChips(pid,wm){return wm.filter(m=>m.giocatori&&m.giocatori[pid]).m
 function convUi(pid,wm){if(!wm.length)return"";const open=S.rcOpen===pid;const sh=m=>esc(fmtDay(m.data).replace(/ (\w{3})$/,""))+(m.ora?" "+esc(m.ora):"")+" "+esc(m.avversario||"partita");
   if(!open){const c=matchChips(pid,wm);return`<div class="mchips">${c}<button class="mbtn" type="button" data-a="rcopen" data-v="${esc(pid)}">${c?"Modifica":"⚽ Convoca"}</button></div>`}
   return`<div class="mpick">${wm.map(m=>{const g=m.giocatori&&m.giocatori[pid];return`<button class="mopt${g?" on":""}" type="button" data-a="rcconv" data-v="${esc(pid)}" data-m="${esc(m.id)}" aria-pressed="${!!g}"><span class="ck">${g?"✓":""}</span><span>${sh(m)}${g&&g.assente?" · assente":""}</span></button>`}).join("")}<button class="mbtn" type="button" data-a="rcopen" data-v="">Fatto</button></div>`}
-async function toggleConv(pid,mid){
-  const ok=await write(async db=>{const d=await gs("getAll",S.token);applyData(d);lastLoad=Date.now();
-    const m=S.matches[mid];if(!m)throw new Error("Partita non trovata: ricarica la pagina");
-    const gi=Object.assign({},m.giocatori||{});
-    if(gi[pid]){if((+gi[pid].min||0)>0)throw new Error("Ha minuti giocati: toglilo dalla scheda della partita");delete gi[pid]}else gi[pid]={min:0,assente:false};
-    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:m.avversario||"",campo:m.campo||"casa",golFatti:m.golFatti==null?"":m.golFatti,golSubiti:m.golSubiti==null?"":m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
-    await db.doc("matches/"+mid).set(body)},"");
-  if(ok)render()}
+let convQ=Promise.resolve();const convPend=[];
+function applyPend(){convPend.forEach(x=>{const m=S.matches[x.mid];if(!m)return;m.giocatori=Object.assign({},m.giocatori||{});if(x.had)delete m.giocatori[x.pid];else if(!m.giocatori[x.pid])m.giocatori[x.pid]={min:0,assente:false}})}
+function toggleConv(pid,mid){
+  const m0=S.matches[mid];if(!m0){toast("Partita non trovata: ricarica la pagina");return}
+  const had=!!(m0.giocatori&&m0.giocatori[pid]);
+  if(had&&(+m0.giocatori[pid].min||0)>0){toast("Ha minuti giocati: toglilo dalla scheda della partita");return}
+  const prev=m0.giocatori&&m0.giocatori[pid];
+  m0.giocatori=Object.assign({},m0.giocatori||{});
+  if(had)delete m0.giocatori[pid];else m0.giocatori[pid]={min:0,assente:false};
+  const it={pid,mid,had};convPend.push(it);render();
+  convQ=convQ.then(async()=>{
+    try{
+      const d=await gs("getAll",S.token);applyData(d);lastLoad=Date.now();applyPend();
+      const m=S.matches[mid];if(!m)throw new Error("Partita non trovata: ricarica la pagina");
+      const gi=Object.assign({},m.giocatori||{});
+      if(had)delete gi[pid];else if(!gi[pid])gi[pid]={min:0,assente:false};
+      const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:m.avversario||"",campo:m.campo||"casa",golFatti:m.golFatti==null?"":m.golFatti,golSubiti:m.golSubiti==null?"":m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
+      await api.doc("matches/"+mid).set(body);
+      convPend.splice(convPend.indexOf(it),1);applyPend();render();
+    }catch(e){
+      convPend.splice(convPend.indexOf(it),1);const mm=S.matches[mid];if(mm){mm.giocatori=Object.assign({},mm.giocatori||{});if(had)mm.giocatori[pid]=prev||{min:0,assente:false};else delete mm.giocatori[pid]}
+      if(!sessionLost(e)){toast("Convocazione non salvata, riprova");render()}
+    }
+  })}
 function recapGroups(mon){const g={doppia:[],conv:[],non:[]};roster().forEach(p=>{const w=weekInfo(p.id,mon);g[w.st].push({p,w})});return g}
 function ticks(marks){return`<span class="ticks">${marks.map((m,i)=>`<span class="tick ${m===true?"y":m===false?"n":""}" title="${DAYNAMES[i]}: ${m===true?"presente":m===false?"assente":"non registrato"}">${DAYNAMES[i][0]}</span>`).join("")}</span>`}
 function recapView(){
@@ -543,6 +559,14 @@ function matchesView(){
     ${!roster().length?noPlayers():all.length?sect(next.length&&past.length?"Prossime":"",next,false).replace('<h3 class="dayh"></h3>',"")+sect(next.length?"Giocate":"",past,true).replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>Nessuna partita registrata</h3><p style="margin:0">Dopo la partita del fine settimana premi <b>Nuova partita</b>: segna i convocati e i minuti. Le statistiche compaiono nella scheda di ogni giocatore.</p></div>`}</div>`;
 }
 function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
+function convText(m){
+  const l=roster().filter(p=>m.giocatori&&m.giocatori[p.id]);
+  let d="";if(m.data){const x=new Date(m.data+"T12:00:00");d=x.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});d=d.charAt(0).toUpperCase()+d.slice(1)}
+  const L=["⚽ *DF Academy 2018 – Convocati*",(m.avversario?"vs "+m.avversario:"Partita")+" ("+(m.campo==="trasferta"?"trasferta":"casa")+")",(d+(m.ora?" · ore "+m.ora:"")).trim()];
+  if(m.mister)L.push("Mister "+m.mister);
+  L.push("","Convocati ("+l.length+"):");
+  l.forEach((p,i)=>L.push((i+1)+". "+fullName(p)+(isGk(p.id)?" 🧤":"")));
+  return L.filter((x,i)=>x||i>2).join("\n")}
 function matchForm(){
   const m=S.matchEdit;const ps=roster();const mon=matchWeek(m.data||todayIso);
   return`<div class="stack"><div class="head"><div><h2>${m.id?"Modifica partita":"Nuova partita"}</h2><p class="sub">Spunta i convocati, poi inserisci i minuti. Accanto a ogni nome trovi lo stato della settimana ${weekLabel(mon)}.</p></div>
@@ -558,7 +582,7 @@ function matchForm(){
       <div class="field"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div>
     </div></div>
     <div class="row" style="justify-content:space-between"><h3 style="margin:0">Giocatori · <span class="num" id="convcount">${Object.keys(m.giocatori).length}</span> convocati</h3>
-      <div class="row"><button class="btn small" type="button" data-a="convsugg">Convoca i convocabili</button></div></div>
+      <div class="row"><button class="btn small" type="button" data-a="convsugg">Convoca i convocabili</button><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button></div></div>
     <div class="tablewrap mtable"><table><thead><tr><th>Conv.</th><th>Giocatore</th><th>Presenza</th><th class="r">Minuti</th></tr></thead><tbody>
     ${ps.map(p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);return`<tr class="${g?"on":""}"><td><input type="checkbox" id="cv_${p.id}" data-a="conv" data-v="${p.id}" ${g?"checked":""} aria-label="Convoca ${esc(fullName(p))}"></td>
       <td><label for="cv_${p.id}"><b>${esc(fullName(p))}</b></label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span></td>
@@ -663,6 +687,7 @@ document.addEventListener("click",async e=>{
   case"deltr":if(el.dataset.c!=="1"){el.dataset.c="1";el.textContent="Conferma eliminazione";return}
     if(await write(db=>db.doc("trainings/"+S.trDate).delete(),"Allenamento eliminato")){S.draft=null;S.dirty=false;render()}break;
   case"rcweek":S.recapWeek=addDays(S.recapWeek,7*v);render();break;
+  case"copyconv":{const m=S.matchEdit;if(!m)break;if(!Object.keys(m.giocatori||{}).length){toast("Nessun convocato da copiare");break}const txt=convText(m);try{await navigator.clipboard.writeText(txt);toast("Convocati copiati: incollali nel gruppo")}catch(x){showCopyFallback(txt)}break}
   case"copyrecap":{const txt=recapText();try{await navigator.clipboard.writeText(txt);toast("Recap copiato: incollalo nel gruppo")}catch(x){showCopyFallback(txt)}break}
   case"newmatch":S.matchEdit=newMatchDraft();window.scrollTo(0,0);render();break;
   case"openmatch":{const m=S.matches[v];S.matchEdit=JSON.parse(JSON.stringify(Object.assign({id:v,durata:45,giocatori:{}},m)));window.scrollTo(0,0);render();break}
