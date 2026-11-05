@@ -45,7 +45,7 @@
 html,body{margin:0}
 [hidden]{display:none!important}
 img{max-width:100%}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{padding-top:env(safe-area-inset-top,0px)}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -64,6 +64,7 @@ button{cursor:pointer}
 .who{font-size:13px;text-align:right;opacity:.9}
 .who button{background:none;border:1px solid rgba(238,244,239,.35);color:#eef4ef;border-radius:999px;padding:3px 10px;font-size:12px;margin-top:3px}
 .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs.bot{display:none}
 .tabs button{background:none;border:0;color:#eef4ef;opacity:.65;padding:10px 12px 11px;font-weight:600;font-size:14px;border-bottom:3px solid transparent;white-space:nowrap}
 .tabs button[aria-selected="true"]{opacity:1;color:var(--yellow);border-bottom-color:var(--yellow)}
 
@@ -259,12 +260,13 @@ body.is-login::before{background:transparent}
 .login input{border-radius:12px;padding:12px 14px}
 @media (max-width:720px){
   .tl{display:none}.ts{display:inline}
-  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:8;width:auto;gap:0;overflow:visible;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.18);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
-  .tabs button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;border-bottom:0;opacity:1;color:var(--muted);padding:2px 0;font-size:11px;font-weight:600}
-  .tabs button .ic{width:56px;height:30px;border-radius:15px;display:grid;place-items:center;transition:background .15s}
-  .tabs button[aria-selected="true"]{color:var(--fg);border-bottom:0}
-  .tabs button[aria-selected="true"] .ic{color:#14204f}
-  .tabs button[aria-selected="true"] .ic{background:var(--yellow)}
+  .tabs.top{display:none}
+  .tabs.bot{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:8;width:auto;gap:0;overflow:visible;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.18);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabs.bot button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;border-bottom:0;opacity:1;color:var(--muted);padding:2px 0;font-size:11px;font-weight:600}
+  .tabs.bot button .ic{width:56px;height:30px;border-radius:15px;display:grid;place-items:center;transition:background .15s}
+  .tabs.bot button[aria-selected="true"]{color:var(--fg);border-bottom:0}
+  .tabs.bot button[aria-selected="true"] .ic{color:#14204f}
+  .tabs.bot button[aria-selected="true"] .ic{background:var(--yellow)}
   .savebar{bottom:calc(66px + env(safe-area-inset-bottom,0px));padding-bottom:0;z-index:7;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
   main{padding-block:14px calc(150px + env(safe-area-inset-bottom,0px))}
   .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
@@ -373,10 +375,11 @@ function render(){
   const u=S.me||{nome:""};
   const ICO={allenamenti:'<path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm4 10 2 2 4-4"/>',recap:'<path d="M5 20V10m7 10V4m7 16v-7"/>',partite:'<circle cx="12" cy="12" r="9"/><path d="m12 8 3.5 2.5-1.3 4h-4.4l-1.3-4Zm0-6v6m3.5 2.5L21 9.8M14.2 14.5l3.2 4.4M9.8 14.5l-3.200 4.4M8.500 10.500 3 9.800"/>',rosa:'<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.200A6.500 6.500 0 0 1 21.500 20"/>'};
   const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];
+  const navHtml=c=>`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(u.nome)}</span><br><button data-a="logout" type="button">Esci</button></div></div>
-    <div class="wrap"><nav class="tabs" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav></div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 3 · 5 nov 2026</p></main>`;
+    <div class="wrap">${navHtml("top")}</div></div>
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 4 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -662,6 +665,6 @@ S.dl=true;render();initDb();
 })();
 </script>
 
-<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}</script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{}))}</script>
 </body>
 </html>
