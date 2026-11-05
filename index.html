@@ -291,6 +291,22 @@ body.is-login::before{background:transparent}
 .mpick .mbtn{align-self:flex-start;border-style:solid}
 .mopt span:last-child{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 .mpick{min-width:0}
+.gwrap{display:flex;flex-direction:column;gap:8px}
+.gtitle{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:14px;color:var(--muted)}
+.gtitle small{text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:600}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.gcard.own{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow) inset}
+.ghead{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:12px 14px;font-size:15px}
+.ghead b{flex:1;min-width:0}
+.gsum{display:flex;gap:10px;font-size:13px;font-weight:700;white-space:nowrap}
+.chev{color:var(--muted);width:14px;text-align:center}
+.gbody{padding:0 14px 12px;display:flex;flex-direction:column;gap:9px}
+.gline em{display:block;font-style:normal;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.gline{display:flex;flex-wrap:wrap;gap:5px}
+.gline em{flex:0 0 100%}
+.gname{background:var(--surface-2);border-radius:9px;padding:3px 9px;font-size:13px;font-weight:600}
+.gname i{font-style:normal;opacity:.6;margin-left:6px;font-size:12px}
+.gnone{color:var(--muted);font-size:13px}
 </style>
 
 </head>
@@ -305,6 +321,8 @@ window.onerror=function(m,src,l,c){var a=document.getElementById("app");if(a)a.i
 /* ---------- utenti (password salvate come hash, mai in chiaro) ---------- */
 const LOGO="data:image\/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABfCAMAAABbTvC+AAAAkFBMVEWcqFRPZnhHXojp6yxRZq80Tps1T6FJX6vQ1t9ccLKZpMs5UaeUm7jL0kBwhbp3iLuVpc4+Vn1zhcEUMph9j2FzhcK9zOPFuNIhOp5rfMp2hbl5icKDlL7\/v3\/U1L8AAAAjQI\/8+yYaOJIhPpCrtk1QZneJmFzS2Drm6TJ0hmdmeW+GlWL+\/v05U4i5w0bEy0JlDynEAAAAMHRSTlP\/\/vX\/XtOjlhguH20U\/2cpS\/8n8P9jEhSpTqaPWwQMAP7\/\/\/\/\/\/v\/\/\/\/7+\/wf4\/\/8vBDmZAAAHrElEQVR42q2ah3qsKhCAsW9LO\/X2IIgFQd\/\/7e7MYNu1rJuE7zsnq3F\/xulA2Pvecfg7ikKz+3G287lTGPmM+VF4+FLw5QzYMk3L\/eg94FPisDgQnVy+AmxeEq6ydBxlpqL4aD4JPoQJ9zpsq3XrPmUeT46Hj4PNIYx41cEajwvBe3SjeRz++hjYHBPu18WIlZxLIb3G3SlqPzq\/mEfB5hJGVmedxTIlEIsD0L3Gy8yzcXh6BHwI41HYko1Yhxaq95EnEDsO\/9sHvoRxZKum7N\/YgmpvhhA276fNKhstWZLdUpOJCspM8znWobnulJ0GmQZ2eFkFmxPKOlDTIveudHA9QCNeLzZKAOyfBzMHm+MZ9FoN1IB5K8Jeie0NXwCd+GDLIXLYIKpft+NDqALJ7w4Qe\/KKZVMrGyfOUdjheE6s1axIr6iLWLko9pSdFkyDo5yPhkXWq5vp\/V5WcTUGymxIvMunkqHgPpNDginbXCFVOuGqvB9VpZy+wVyzUXGKSPi9ygddplnEeNOLamVPJXAwyWjgIRjSokpno7Ri0LccVNpYxlFicoErtUpeXAMKLeQyWE5tCY7COokRrEZR18Bpmot7YAfXDvwdJ9Bi7gDBjFHtATt9sT9YxOgrc3DmRC6KYphCqYLMUxY0gnVwHbO4precg6VyMLjwWVdDuPOhZiQsgHMEJyyuFsHwQAcG9UOidI6kBU3RwD0p18CkgjNLUNdsIdAGMFnEc+7Zg2lUV+52BdYhOyv6wjYYyKSDgDMXWzAYtxUMfRvo9KQKWeij8rZU4a40Ed\/Y4A4Bnwb7aBwJ9bb0AWxBfQW\/C+6ursCLCQ8DIPCP7IgfSi6\/DgyCPkUndoowWbyJXapIPTZPEjdfQzM3kWEmysav7zUeg5Evpmf3NRZDBaEI0ZtgKTuBr9xtucJ0gYfglQjZDpDlctIHXnUGMPnbQoRMJFZDSPfgjSpImnVgkKaRa2DPFkNdgJboLpiTGx8BfLQFOvIqWE3SprwLFphuwdsAfCK38MQa2Bu5vXNkG2B8PIsNgA25xQLYuwIXHprBSbwF1s4psGGJ6bNYdhynirJg1B+Dwpo74JxyG4HJegvPuoTr8fyHdm2302GzBSZdoe0Q\/I0vW8+Ve3UTDEjeACPrKfpG4Atar\/QEX5R5FuxAXvcKsjjaDsGGYk+LxTfT\/tyqvFrtF0l7EHeu2wwpb4gVv1y4t96Hkjv6f3bgmxCZB6G809H2Cx9JKi6iX31\/TL3FoEyswH3D5MwG17JrNWV\/X4yNnnTvBZd9zuw7+sSbJDjJaxJBCutpjbVSaDCA5Fp7SqEetBvKyu65nHKrgB+9F3dg0kXbvRHoHxsjwd2aC9yNF8XQAASV6GM8Y9RACZVlAYSlqFMlURP2OIAPvS7glQHjylmG7RWBc2oIYfLyCebSZJH2qcgzSkuqbFkAAV93UcpiMy5uJn5Bb8MEylVxqOBKYBkv37A\/aaGjg1krfDvQUIOJCUpAC1MVGc5O8oWTVdMLZVGUU3hl2qCcDAsQR6UykDxgBOY4i6rSJi+KGsEp6qsVfkFGQhHa6DIBuxipsGnP4OtN0AAuo6KEhsYMpxwY0i2C4bcksSssAsVhouvazHSdR4moABBg1Hf4T1dgBXIvTA04HYIFZkULYE9xa5uUZSA83Ma6UQnXqpyuFpAm7vrvNsiU1qCztyAtKq2QBK7FaKpW5SVMA3Nq2AIAZ6h5jhoXGBgVpWKWmOuVKZmvoXTmGu4cC3PQclBv1a1v0iYLwFIu2cMSOgvAWUQePHXgBjPm682S97crUKyoedbCCDLpsSZgumi4FwR4iwVt3fyAANR0GeR5Aa8PV4yWPZoSW2JuF+mhdu2smCyB5FWigG2K9YWwqHQ2+toUfInarj0ZBu\/+9ZeiTzeTey719Jm4iX7NtxXOerua8dXmZ2xU9LhHOYIpSJa6w12jE\/iwsBFiEr2yaNgxpMyGvDbbYXmh0u59SGTXFfuH5a0bSsst\/4DI1LGl3k+zvNlE5Roc\/fHxvaL182FtF4syRlk\/PvKSVkqr22OHOE8\/POrYmNV9N6pRsCmSPTRo8+PJvryvg11Zha7ooeFhcfTCzZ3CE1W\/gu\/3ZiqSkC59s723GdonNLCUe8mCtmha+3oHbBJaILG9YLd4AI8wlzu7sf9S+VvcaFhttNMqMeaOxLB\/Hrln9xmOpMj9w56N6W+W3o7ld0f9g6oUi077drxD2wxL\/GEMl7PIyOy3vVvpoW3d7uFsYDi4H31gwKbgP2Yv2DinC9S2fsl\/Wv\/5fT\/Y\/EWxXapV34DehgKu8J\/NA8cVxiTUjpVarPqvdtzwwQMWyPpFt35e5pKfAdc8enLTyZzmcmlpKes73K0jocQn12J8YUHGHPdsPnKI1cvcetfqALO19+TdBgOZCGU1VYeQFS1Omk3u9nmeSWzWBdd4iNXfAv\/98HmeMc887xZL3bEbd+Kmtf1pPnW0+RxpR2o9bD+ddsG\/o9fPnpmefL8\/0FSqS06NHx8+f8prQl7fFHobGvMVx8dhpJoR2yj\/9f2LDrx\/J7zq8jBYcd+J976TdPMaWWqjaj9+NV969m+e6ew\/fjZf\/EcFBg6p4dzf7P5zhf8BMFX8l5znSVwAAAAASUVORK5CYII=";
 const MOTIVI=["Giustificata"];
+const GRUPPI=[["gianni","Gianni","g.dipetrillo"],["pierluigi","Pierluigi","p.lucatelli"],["riccardo","Riccardo","r.verde"]];
+const gOf=u=>(GRUPPI.find(g=>g[2]===u)||[])[0]||"";
 const MISTER=["Verde","Di Petrillo","Lucatelli"];
 const ROLES=["","Portiere","Difensore","Centrocampista","Attaccante"];
 
@@ -398,7 +416,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(u.nome)}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 7 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 8 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -424,6 +442,20 @@ const noPlayers=()=>`<div class="panel stack"><div><h3>Rosa vuota</h3><p style="
 
 /* --- allenamenti --- */
 function getDraft(){if(!S.draft||S.draft.date!==S.trDate){const t=S.trainings[S.trDate];S.draft={date:S.trDate,assenti:Object.assign({},t&&t.assenti||{})};S.dirty=false}return S.draft}
+function groupRecap(){
+  const ps=roster();if(!ps.length)return"";
+  const own=gOf(S.user);const order=GRUPPI.slice().sort((a,b)=>(a[0]===own?-1:0)-(b[0]===own?-1:0));
+  const un=ps.filter(p=>!GRUPPI.some(g=>g[0]===p.gruppo));
+  const card=(key,nome,list,isOwn)=>{
+    const g={doppia:[],conv:[],non:[]};list.forEach(p=>{const w=weekInfo(p.id,S.trWeek);g[w.st].push({p,w})});
+    const open=S.gOpen&&key in S.gOpen?S.gOpen[key]:isOwn;
+    const nm=a=>a.length?a.map(x=>`<span class="gname">${esc(fullName(x.p))}${x.w.gk?" 🧤":""}<i>${x.w.count}/3</i></span>`).join(""):`<span class="gnone">nessuno</span>`;
+    return`<section class="gcard${isOwn?" own":""}"><button class="ghead" type="button" data-a="gtoggle" data-v="${key}" aria-expanded="${open}"><b>${isOwn?"Il tuo gruppo · ":"Gruppo "}${esc(nome)}</b><span class="gsum"><span>⭐ ${g.doppia.length}</span><span>✅ ${g.conv.length}</span><span>❌ ${g.non.length}</span></span><span class="chev">${open?"▾":"▸"}</span></button>
+      ${open?`<div class="gbody">${[["⭐ 3/3 · doppia",g.doppia],["✅ 2/3 · convocabili",g.conv],["❌ sotto 2",g.non]].filter(x=>x[1].length).map(x=>`<div class="gline"><em>${x[0]}</em>${nm(x[1])}</div>`).join("")||`<span class="gnone">nessun bambino nel gruppo</span>`}</div>`:""}</section>`};
+  const reg=weekDays(S.trWeek).filter(d=>S.trainings[d]).length;
+  return`<div class="gwrap"><div class="gtitle">Recap gruppi · ${esc(weekLabel(S.trWeek))}${reg<3?` <small>(provvisorio, ${reg}/3 allenamenti)</small>`:""}</div>`+
+    order.map((g,i)=>card(g[0],g[1],ps.filter(p=>p.gruppo===g[0]),g[0]===own||(!own&&i===0))).join("")+
+    (un.length&&isAdmin()?card("senza","Senza gruppo",un,false):"")+`</div>`}
 function trainingView(){
   const ps=roster();const days=weekDays(S.trWeek);
   const dayBtns=days.map((d,i)=>{const reg=!!S.trainings[d];const fut=d>todayIso;
@@ -445,6 +477,7 @@ function trainingView(){
   }
   return`<div class="stack"><div class="head"><div><h2>Allenamenti</h2><p class="sub">Tutti sono presenti di default: segna solo chi manca.</p></div>
     <button class="btn" type="button" data-a="gorecap">Recap convocabili</button></div>
+    ${groupRecap()}
     <div class="row" style="justify-content:space-between"><div class="weeknav"><button class="iconbtn" type="button" data-a="trweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.trWeek)}</span><button class="iconbtn" type="button" data-a="trweek" data-v="1" aria-label="Settimana successiva">›</button></div></div>
     <div class="days">${dayBtns}</div>${body}</div>`;
 }
@@ -577,6 +610,7 @@ function playerEditForm(pid,p){const adm=isAdmin();
       <div class="field"><label for="pe_c">Cognome</label><input id="pe_c" name="cognome" value="${esc(p.cognome)}" required></div>
       <div class="field"><label for="pe_n">Nome</label><input id="pe_n" name="nome" value="${esc(p.nome)}"></div>
       <div class="field"><label for="pe_num">Numero</label><input id="pe_num" name="numero" inputmode="numeric" value="${esc(p.numero)}"></div>
+      <div class="field"><label for="pe_g">Gruppo mister</label><select id="pe_g" name="gruppo"><option value="">—</option>${GRUPPI.map(g=>`<option value="${g[0]}" ${p.gruppo===g[0]?"selected":""}>${g[1]}</option>`).join("")}</select></div>
       <div class="field"><label for="pe_r">Ruolo</label><select id="pe_r" name="ruolo">${ROLES.map(r=>`<option value="${r}" ${p.ruolo===r?"selected":""}>${r||"—"}</option>`).join("")}</select></div>
       <div class="field"><label for="pe_b">Data di nascita</label><input id="pe_b" name="nascita" type="date" value="${esc(p.nascita)}"></div>
       <div class="field"><label for="pe_cm">Certificato medico valido fino al</label><input id="pe_cm" name="certificato" type="date" value="${esc(p.certificato)}"></div>`:""}
@@ -596,7 +630,7 @@ document.addEventListener("submit",async e=>{
     const ok=await write(async()=>{applyData(await gs("aggiungiGiocatori",S.token,list));lastLoad=Date.now()},lines.length+" giocatori aggiunti");
     if(ok){S.showBulk=false;render()}return}
   if(f.id==="playerForm"){const pid=f.dataset.v;const fd=new FormData(f);const data={note:(fd.get("note")||"").toString()};
-    if(isAdmin())["cognome","nome","numero","ruolo","nascita","certificato"].forEach(k=>data[k]=(fd.get(k)||"").toString().trim());
+    if(isAdmin())["cognome","nome","numero","ruolo","gruppo","nascita","certificato"].forEach(k=>data[k]=(fd.get(k)||"").toString().trim());
     const ok=await write(db=>db.doc("players/"+pid).update(data),"Scheda salvata");if(ok){S.playerEdit=null;S.pending=false;render()}}
 });
 document.addEventListener("click",async e=>{
@@ -628,6 +662,7 @@ document.addEventListener("click",async e=>{
   case"mabs":{const g=S.matchEdit.giocatori[v];if(g){g.assente=true;g.min="";S.pending=false;render()}break}
   case"fullmin":{const m=S.matchEdit;if(m.giocatori[v]){m.giocatori[v].min=+m.durata||45;const i=document.querySelector(`[data-pm="${v}"]`);if(i)i.value=m.giocatori[v].min}break}
   case"convsugg":{const m=S.matchEdit;const mon=matchWeek(m.data||todayIso);roster().forEach(p=>{if(weekInfo(p.id,mon).count>=2&&!m.giocatori[p.id])m.giocatori[p.id]={min:"",gol:0}});render();break}
+  case"gtoggle":{S.gOpen=S.gOpen||{};const cur=(v in S.gOpen)?S.gOpen[v]:(v===gOf(S.user));S.gOpen[v]=!cur;render();break}
   case"rcopen":S.rcOpen=(!v||S.rcOpen===v)?null:v;render();break
   case"rcconv":toggleConv(v,el.dataset.m);break
   case"savematch":{const m=S.matchEdit;if(!m.data){toast("Inserisci la data della partita");return}
