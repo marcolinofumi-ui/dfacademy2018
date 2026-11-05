@@ -42,7 +42,7 @@
   --bad:#f08a7e; --bad-soft:#40211d; --gold:#ffe14d; --gold-soft:#3d3a14;
   color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;max-width:100%;overflow-x:hidden}
+html,body{margin:0;max-width:100%}
 [hidden]{display:none!important}
 img{max-width:100%}
 :root{padding-top:env(safe-area-inset-top,0px)}
@@ -420,7 +420,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 14 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 14.1 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
