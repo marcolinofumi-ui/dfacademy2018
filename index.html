@@ -425,11 +425,11 @@ function render(){
 }
 function mailSheet(){const m=S.mail;if(!m)return"";
   const body=m.loading?`<p class="sub" style="margin:8px 0 18px">Preparo il riepilogo…</p>`:`<div class="sub" style="margin:0 0 12px">${esc(weekLabel(S.recapWeek))} · ${m.partite} partite · ${m.convocazioni} convocazioni</div>
-    <div class="field" style="margin-bottom:10px"><label>Destinatari (dal foglio Impostazioni)</label><div class="mailto">${(m.to||[]).map(esc).join("<br>")}</div></div>
+    <div class="field" style="margin-bottom:10px"><label>Destinatari (dal foglio Impostazioni)</label><div class="mailto">${(m.to||[]).length?m.to.map(esc).join("<br>"):`<span style="opacity:.7">Nessun destinatario</span>`}</div></div>${(m.to||[]).length?"":`<div class="note warn">Scrivi l'indirizzo nel foglio Impostazioni, cella <b>destinatari</b> (più indirizzi separati da virgola), poi riapri questo pannello.</div>`}
     <label class="mailchk"><input type="checkbox" data-a="mailinc" ${m.includi?"checked":""}> Includi i bambini non convocati</label>
     ${m.partite?"":`<div class="note warn">Nessuna partita in questa settimana.</div>`}`;
   return`<div class="mailov"><div class="mailsh" role="dialog" aria-label="Invia resoconto"><h3 style="margin:0 0 4px">Invia resoconto weekend</h3>${body}
-    <div class="row" style="gap:10px;margin-top:14px"><button class="btn" style="flex:1" type="button" data-a="mailclose">Annulla</button><button class="btn primary" style="flex:1.4" type="button" data-a="mailsend" ${(m.loading||m.sending||!m.partite)?"disabled":""}>${m.sending?"Invio in corso…":"Invia mail"}</button></div></div></div>`}
+    <div class="row" style="gap:10px;margin-top:14px"><button class="btn" style="flex:1" type="button" data-a="mailclose">Annulla</button><button class="btn primary" style="flex:1.4" type="button" data-a="mailsend" ${(m.loading||m.sending||!m.partite||!(m.to||[]).length)?"disabled":""}>${m.sending?"Invio in corso…":"Invia mail"}</button></div></div></div>`}
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
   if(S.dbState==="error")return`<div class="note warn" style="margin-bottom:14px">Non riesco a caricare i dati. Controlla la connessione e ricarica la pagina.</div>`;
