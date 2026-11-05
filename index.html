@@ -307,6 +307,7 @@ body.is-login::before{background:transparent}
 .gname{background:var(--surface-2);border-radius:9px;padding:3px 9px;font-size:13px;font-weight:600}
 .gname i{font-style:normal;opacity:.6;margin-left:6px;font-size:12px}
 .gnone{color:var(--muted);font-size:13px}
+.ghd{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px;font-size:15px;text-transform:uppercase;letter-spacing:.04em}.ghd small{font-size:12px;opacity:.7;text-transform:none;letter-spacing:0}.ghd.own{color:var(--yellow,#ffe600)}
 </style>
 
 </head>
@@ -416,7 +417,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(u.nome)}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 8 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 9 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -456,6 +457,13 @@ function groupRecap(){
   return`<div class="gwrap"><div class="gtitle">Recap gruppi · ${esc(weekLabel(S.trWeek))}${reg<3?` <small>(provvisorio, ${reg}/3 allenamenti)</small>`:""}</div>`+
     order.map((g,i)=>card(g[0],g[1],ps.filter(p=>p.gruppo===g[0]),g[0]===own||(!own&&i===0))).join("")+
     (un.length&&isAdmin()?card("senza","Senza gruppo",un,false):"")+`</div>`}
+function trList(ps,dr,row){
+  const mine=gOf(S.user);const has=ps.some(p=>p.gruppo);
+  if(!has)return`<div class="list">${ps.map(row).join("")}</div>`;
+  const order=[...(mine?[mine]:[]),...GRUPPI.map(g=>g[0]).filter(k=>k!==mine),""];
+  return order.map(k=>{const l=ps.filter(p=>(p.gruppo||"")===k);if(!l.length)return"";
+    const nm=k?(GRUPPI.find(g=>g[0]===k)||[])[1]||k:"Senza gruppo";const ab=l.filter(p=>dr.assenti[p.id]).length;
+    return`<h3 class="ghd${k===mine?" own":""}">${k===mine?"Il tuo gruppo · ":"Gruppo "}${esc(nm)}<small>${l.length-ab} presenti · ${ab} assenti</small></h3><div class="list">${l.map(row).join("")}</div>`}).join("")}
 function trainingView(){
   const ps=roster();const days=weekDays(S.trWeek);
   const dayBtns=days.map((d,i)=>{const reg=!!S.trainings[d];const fut=d>todayIso;
@@ -467,17 +475,16 @@ function trainingView(){
     body=`<div class="row" style="justify-content:space-between"><div><b class="num">${ps.length-nAbs}</b> presenti · <b class="num">${nAbs}</b> assenti</div>
       <div class="row"><button class="btn small" type="button" data-a="allpres">Tutti presenti</button></div></div>
       ${t?`<div class="note">Registrato da ${esc(t.da||"—")}${t.quando?" "+esc(fmtWhen(t.quando)):t.ts?" il "+new Date(t.ts).toLocaleString("it-IT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}. Puoi correggerlo e salvare di nuovo.</div>`:""}
-      <div class="list">${ps.map(p=>{const m=dr.assenti[p.id];return`<div class="prow ${m?"abs":""}"><div class="shirt num">${esc(p.numero||"")}</div>
+      ${trList(ps,dr,p=>{const m=dr.assenti[p.id];return`<div class="prow ${m?"abs":""}"><div class="shirt num">${esc(p.numero||"")}</div>
         <div class="pname">${esc(fullName(p))}${p.ruolo?`<small>${esc(p.ruolo)}</small>`:""}</div>
         <div class="seg" role="group" aria-label="Presenza ${esc(fullName(p))}"><button type="button" class="p" data-a="pres" data-v="${p.id}" aria-pressed="${!m}">Presente</button><button type="button" class="a" data-a="abs" data-v="${p.id}" aria-pressed="${!!m}">Assente</button></div>
-        ${m?`<div class="motivo">${MOTIVI.map(x=>`<button type="button" class="chip" data-a="motivo" data-v="${p.id}" data-m="${x}" aria-pressed="${m===x}">${m===x?"✓ ":""}${x}</button>`).join("")}</div>`:""}</div>`}).join("")}</div>
+        ${m?`<div class="motivo">${MOTIVI.map(x=>`<button type="button" class="chip" data-a="motivo" data-v="${p.id}" data-m="${x}" aria-pressed="${m===x}">${m===x?"✓ ":""}${x}</button>`).join("")}</div>`:""}</div>`})}
       ${t&&isAdmin()?`<div><button class="btn danger small" type="button" data-a="deltr">Elimina questo allenamento</button></div>`:""}
       <div class="savebar"><div class="wrap"><div class="grow">${S.dirty?"Modifiche non salvate":t?"Allenamento registrato":"Non ancora registrato"} · ${fmtDay(S.trDate)}</div>
       ${S.dirty?`<button class="btn" type="button" data-a="undo">Annulla</button>`:""}<button class="btn primary" type="button" data-a="savetr" ${(!S.dirty&&t)?"disabled":""}>${t?"Salva modifiche":"Salva allenamento"}</button></div></div>`;
   }
   return`<div class="stack"><div class="head"><div><h2>Allenamenti</h2><p class="sub">Tutti sono presenti di default: segna solo chi manca.</p></div>
     <button class="btn" type="button" data-a="gorecap">Recap convocabili</button></div>
-    ${groupRecap()}
     <div class="row" style="justify-content:space-between"><div class="weeknav"><button class="iconbtn" type="button" data-a="trweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.trWeek)}</span><button class="iconbtn" type="button" data-a="trweek" data-v="1" aria-label="Settimana successiva">›</button></div></div>
     <div class="days">${dayBtns}</div>${body}</div>`;
 }
