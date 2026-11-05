@@ -45,7 +45,7 @@
 html,body{margin:0}
 [hidden]{display:none!important}
 img{max-width:100%}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{padding-top:env(safe-area-inset-top,0px)}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -64,6 +64,7 @@ button{cursor:pointer}
 .who{font-size:13px;text-align:right;opacity:.9}
 .who button{background:none;border:1px solid rgba(238,244,239,.35);color:#eef4ef;border-radius:999px;padding:3px 10px;font-size:12px;margin-top:3px}
 .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs.bot{display:none}
 .tabs button{background:none;border:0;color:#eef4ef;opacity:.65;padding:10px 12px 11px;font-weight:600;font-size:14px;border-bottom:3px solid transparent;white-space:nowrap}
 .tabs button[aria-selected="true"]{opacity:1;color:var(--yellow);border-bottom-color:var(--yellow)}
 
@@ -259,17 +260,53 @@ body.is-login::before{background:transparent}
 .login input{border-radius:12px;padding:12px 14px}
 @media (max-width:720px){
   .tl{display:none}.ts{display:inline}
-  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:8;width:auto;gap:0;overflow:visible;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.18);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
-  .tabs button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;border-bottom:0;opacity:1;color:var(--muted);padding:2px 0;font-size:11px;font-weight:600}
-  .tabs button .ic{width:56px;height:30px;border-radius:15px;display:grid;place-items:center;transition:background .15s}
-  .tabs button[aria-selected="true"]{color:var(--fg);border-bottom:0}
-  .tabs button[aria-selected="true"] .ic{color:#14204f}
-  .tabs button[aria-selected="true"] .ic{background:var(--yellow)}
+  .tabs.top{display:none}
+  .tabs.bot{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:8;width:auto;gap:0;overflow:visible;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.18);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabs.bot button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;border-bottom:0;opacity:1;color:var(--muted);padding:2px 0;font-size:11px;font-weight:600}
+  .tabs.bot button .ic{width:56px;height:30px;border-radius:15px;display:grid;place-items:center;transition:background .15s}
+  .tabs.bot button[aria-selected="true"]{color:var(--fg);border-bottom:0}
+  .tabs.bot button[aria-selected="true"] .ic{color:#14204f}
+  .tabs.bot button[aria-selected="true"] .ic{background:var(--yellow)}
   .savebar{bottom:calc(66px + env(safe-area-inset-bottom,0px));padding-bottom:0;z-index:7;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
   main{padding-block:14px calc(150px + env(safe-area-inset-bottom,0px))}
   .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 }
 .ver{text-align:center;font-size:11px;color:var(--muted);opacity:.6;margin:18px 0 0}
+.dayh{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:14px;color:var(--muted);margin:18px 2px 2px}
+.dayl{font-weight:700;font-size:14px;color:var(--muted);margin:12px 2px 6px;text-transform:capitalize}
+.mcard{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 8px}
+.mtime{font-weight:800;font-size:18px;color:var(--fg)}
+.minfo b{display:block;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+.minfo small{color:var(--muted);font-size:13px}
+.mres{text-align:right;font-family:var(--display);font-weight:800;font-size:24px;white-space:nowrap}
+.mchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.mchip{display:inline-block;max-width:100%;font-size:11.5px;font-weight:700;line-height:1.3;background:var(--gold-soft);color:var(--gold);border-radius:10px;padding:3px 9px;white-space:normal;overflow-wrap:anywhere}
+.mchip.off{background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
+.mbtn{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:10px;padding:3px 10px;font-size:12px;font-weight:700}
+.mpick{display:flex;flex-direction:column;gap:6px;margin-top:6px;max-width:100%}
+.mopt{display:flex;align-items:center;gap:10px;text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 12px;font-size:14px;font-weight:600}
+.mopt .ck{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;font-size:14px;line-height:1}
+.mopt.on{background:var(--gold-soft);border-color:var(--gold);color:var(--fg)}
+.mopt.on .ck{background:var(--gold);border-color:var(--gold);color:#fff}
+.mpick .mbtn{align-self:flex-start;border-style:solid}
+.mopt span:last-child{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
+.mpick{min-width:0}
+.gwrap{display:flex;flex-direction:column;gap:8px}
+.gtitle{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:14px;color:var(--muted)}
+.gtitle small{text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:600}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.gcard.own{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow) inset}
+.ghead{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:12px 14px;font-size:15px}
+.ghead b{flex:1;min-width:0}
+.gsum{display:flex;gap:10px;font-size:13px;font-weight:700;white-space:nowrap}
+.chev{color:var(--muted);width:14px;text-align:center}
+.gbody{padding:0 14px 12px;display:flex;flex-direction:column;gap:9px}
+.gline em{display:block;font-style:normal;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.gline{display:flex;flex-wrap:wrap;gap:5px}
+.gline em{flex:0 0 100%}
+.gname{background:var(--surface-2);border-radius:9px;padding:3px 9px;font-size:13px;font-weight:600}
+.gname i{font-style:normal;opacity:.6;margin-left:6px;font-size:12px}
+.gnone{color:var(--muted);font-size:13px}
 </style>
 
 </head>
@@ -284,6 +321,8 @@ window.onerror=function(m,src,l,c){var a=document.getElementById("app");if(a)a.i
 /* ---------- utenti (password salvate come hash, mai in chiaro) ---------- */
 const LOGO="data:image\/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABfCAMAAABbTvC+AAAAkFBMVEWcqFRPZnhHXojp6yxRZq80Tps1T6FJX6vQ1t9ccLKZpMs5UaeUm7jL0kBwhbp3iLuVpc4+Vn1zhcEUMph9j2FzhcK9zOPFuNIhOp5rfMp2hbl5icKDlL7\/v3\/U1L8AAAAjQI\/8+yYaOJIhPpCrtk1QZneJmFzS2Drm6TJ0hmdmeW+GlWL+\/v05U4i5w0bEy0JlDynEAAAAMHRSTlP\/\/vX\/XtOjlhguH20U\/2cpS\/8n8P9jEhSpTqaPWwQMAP7\/\/\/\/\/\/v\/\/\/\/7+\/wf4\/\/8vBDmZAAAHrElEQVR42q2ah3qsKhCAsW9LO\/X2IIgFQd\/\/7e7MYNu1rJuE7zsnq3F\/xulA2Pvecfg7ikKz+3G287lTGPmM+VF4+FLw5QzYMk3L\/eg94FPisDgQnVy+AmxeEq6ydBxlpqL4aD4JPoQJ9zpsq3XrPmUeT46Hj4PNIYx41cEajwvBe3SjeRz++hjYHBPu18WIlZxLIb3G3SlqPzq\/mEfB5hJGVmedxTIlEIsD0L3Gy8yzcXh6BHwI41HYko1Yhxaq95EnEDsO\/9sHvoRxZKum7N\/YgmpvhhA276fNKhstWZLdUpOJCspM8znWobnulJ0GmQZ2eFkFmxPKOlDTIveudHA9QCNeLzZKAOyfBzMHm+MZ9FoN1IB5K8Jeie0NXwCd+GDLIXLYIKpft+NDqALJ7w4Qe\/KKZVMrGyfOUdjheE6s1axIr6iLWLko9pSdFkyDo5yPhkXWq5vp\/V5WcTUGymxIvMunkqHgPpNDginbXCFVOuGqvB9VpZy+wVyzUXGKSPi9ygddplnEeNOLamVPJXAwyWjgIRjSokpno7Ri0LccVNpYxlFicoErtUpeXAMKLeQyWE5tCY7COokRrEZR18Bpmot7YAfXDvwdJ9Bi7gDBjFHtATt9sT9YxOgrc3DmRC6KYphCqYLMUxY0gnVwHbO4precg6VyMLjwWVdDuPOhZiQsgHMEJyyuFsHwQAcG9UOidI6kBU3RwD0p18CkgjNLUNdsIdAGMFnEc+7Zg2lUV+52BdYhOyv6wjYYyKSDgDMXWzAYtxUMfRvo9KQKWeij8rZU4a40Ed\/Y4A4Bnwb7aBwJ9bb0AWxBfQW\/C+6ursCLCQ8DIPCP7IgfSi6\/DgyCPkUndoowWbyJXapIPTZPEjdfQzM3kWEmysav7zUeg5Evpmf3NRZDBaEI0ZtgKTuBr9xtucJ0gYfglQjZDpDlctIHXnUGMPnbQoRMJFZDSPfgjSpImnVgkKaRa2DPFkNdgJboLpiTGx8BfLQFOvIqWE3SprwLFphuwdsAfCK38MQa2Bu5vXNkG2B8PIsNgA25xQLYuwIXHprBSbwF1s4psGGJ6bNYdhynirJg1B+Dwpo74JxyG4HJegvPuoTr8fyHdm2302GzBSZdoe0Q\/I0vW8+Ve3UTDEjeACPrKfpG4Atar\/QEX5R5FuxAXvcKsjjaDsGGYk+LxTfT\/tyqvFrtF0l7EHeu2wwpb4gVv1y4t96Hkjv6f3bgmxCZB6G809H2Cx9JKi6iX31\/TL3FoEyswH3D5MwG17JrNWV\/X4yNnnTvBZd9zuw7+sSbJDjJaxJBCutpjbVSaDCA5Fp7SqEetBvKyu65nHKrgB+9F3dg0kXbvRHoHxsjwd2aC9yNF8XQAASV6GM8Y9RACZVlAYSlqFMlURP2OIAPvS7glQHjylmG7RWBc2oIYfLyCebSZJH2qcgzSkuqbFkAAV93UcpiMy5uJn5Bb8MEylVxqOBKYBkv37A\/aaGjg1krfDvQUIOJCUpAC1MVGc5O8oWTVdMLZVGUU3hl2qCcDAsQR6UykDxgBOY4i6rSJi+KGsEp6qsVfkFGQhHa6DIBuxipsGnP4OtN0AAuo6KEhsYMpxwY0i2C4bcksSssAsVhouvazHSdR4moABBg1Hf4T1dgBXIvTA04HYIFZkULYE9xa5uUZSA83Ma6UQnXqpyuFpAm7vrvNsiU1qCztyAtKq2QBK7FaKpW5SVMA3Nq2AIAZ6h5jhoXGBgVpWKWmOuVKZmvoXTmGu4cC3PQclBv1a1v0iYLwFIu2cMSOgvAWUQePHXgBjPm682S97crUKyoedbCCDLpsSZgumi4FwR4iwVt3fyAANR0GeR5Aa8PV4yWPZoSW2JuF+mhdu2smCyB5FWigG2K9YWwqHQ2+toUfInarj0ZBu\/+9ZeiTzeTey719Jm4iX7NtxXOerua8dXmZ2xU9LhHOYIpSJa6w12jE\/iwsBFiEr2yaNgxpMyGvDbbYXmh0u59SGTXFfuH5a0bSsst\/4DI1LGl3k+zvNlE5Roc\/fHxvaL182FtF4syRlk\/PvKSVkqr22OHOE8\/POrYmNV9N6pRsCmSPTRo8+PJvryvg11Zha7ooeFhcfTCzZ3CE1W\/gu\/3ZiqSkC59s723GdonNLCUe8mCtmha+3oHbBJaILG9YLd4AI8wlzu7sf9S+VvcaFhttNMqMeaOxLB\/Hrln9xmOpMj9w56N6W+W3o7ld0f9g6oUi077drxD2wxL\/GEMl7PIyOy3vVvpoW3d7uFsYDi4H31gwKbgP2Yv2DinC9S2fsl\/Wv\/5fT\/Y\/EWxXapV34DehgKu8J\/NA8cVxiTUjpVarPqvdtzwwQMWyPpFt35e5pKfAdc8enLTyZzmcmlpKes73K0jocQn12J8YUHGHPdsPnKI1cvcetfqALO19+TdBgOZCGU1VYeQFS1Omk3u9nmeSWzWBdd4iNXfAv\/98HmeMc887xZL3bEbd+Kmtf1pPnW0+RxpR2o9bD+ddsG\/o9fPnpmefL8\/0FSqS06NHx8+f8prQl7fFHobGvMVx8dhpJoR2yj\/9f2LDrx\/J7zq8jBYcd+J976TdPMaWWqjaj9+NV969m+e6ew\/fjZf\/EcFBg6p4dzf7P5zhf8BMFX8l5znSVwAAAAASUVORK5CYII=";
 const MOTIVI=["Giustificata"];
+const GRUPPI=[["gianni","Gianni","g.dipetrillo"],["pierluigi","Pierluigi","p.lucatelli"],["riccardo","Riccardo","r.verde"]];
+const gOf=u=>(GRUPPI.find(g=>g[2]===u)||[])[0]||"";
 const MISTER=["Verde","Di Petrillo","Lucatelli"];
 const ROLES=["","Portiere","Difensore","Centrocampista","Attaccante"];
 
@@ -373,10 +412,11 @@ function render(){
   const u=S.me||{nome:""};
   const ICO={allenamenti:'<path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm4 10 2 2 4-4"/>',recap:'<path d="M5 20V10m7 10V4m7 16v-7"/>',partite:'<circle cx="12" cy="12" r="9"/><path d="m12 8 3.5 2.5-1.3 4h-4.4l-1.3-4Zm0-6v6m3.5 2.5L21 9.8M14.2 14.5l3.2 4.4M9.8 14.5l-3.200 4.4M8.500 10.500 3 9.800"/>',rosa:'<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.200A6.500 6.500 0 0 1 21.500 20"/>'};
   const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];
+  const navHtml=c=>`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(u.nome)}</span><br><button data-a="logout" type="button">Esci</button></div></div>
-    <div class="wrap"><nav class="tabs" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav></div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 3 · 5 nov 2026</p></main>`;
+    <div class="wrap">${navHtml("top")}</div></div>
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 8 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -402,6 +442,20 @@ const noPlayers=()=>`<div class="panel stack"><div><h3>Rosa vuota</h3><p style="
 
 /* --- allenamenti --- */
 function getDraft(){if(!S.draft||S.draft.date!==S.trDate){const t=S.trainings[S.trDate];S.draft={date:S.trDate,assenti:Object.assign({},t&&t.assenti||{})};S.dirty=false}return S.draft}
+function groupRecap(){
+  const ps=roster();if(!ps.length)return"";
+  const own=gOf(S.user);const order=GRUPPI.slice().sort((a,b)=>(a[0]===own?-1:0)-(b[0]===own?-1:0));
+  const un=ps.filter(p=>!GRUPPI.some(g=>g[0]===p.gruppo));
+  const card=(key,nome,list,isOwn)=>{
+    const g={doppia:[],conv:[],non:[]};list.forEach(p=>{const w=weekInfo(p.id,S.trWeek);g[w.st].push({p,w})});
+    const open=S.gOpen&&key in S.gOpen?S.gOpen[key]:isOwn;
+    const nm=a=>a.length?a.map(x=>`<span class="gname">${esc(fullName(x.p))}${x.w.gk?" 🧤":""}<i>${x.w.count}/3</i></span>`).join(""):`<span class="gnone">nessuno</span>`;
+    return`<section class="gcard${isOwn?" own":""}"><button class="ghead" type="button" data-a="gtoggle" data-v="${key}" aria-expanded="${open}"><b>${isOwn?"Il tuo gruppo · ":"Gruppo "}${esc(nome)}</b><span class="gsum"><span>⭐ ${g.doppia.length}</span><span>✅ ${g.conv.length}</span><span>❌ ${g.non.length}</span></span><span class="chev">${open?"▾":"▸"}</span></button>
+      ${open?`<div class="gbody">${[["⭐ 3/3 · doppia",g.doppia],["✅ 2/3 · convocabili",g.conv],["❌ sotto 2",g.non]].filter(x=>x[1].length).map(x=>`<div class="gline"><em>${x[0]}</em>${nm(x[1])}</div>`).join("")||`<span class="gnone">nessun bambino nel gruppo</span>`}</div>`:""}</section>`};
+  const reg=weekDays(S.trWeek).filter(d=>S.trainings[d]).length;
+  return`<div class="gwrap"><div class="gtitle">Recap gruppi · ${esc(weekLabel(S.trWeek))}${reg<3?` <small>(provvisorio, ${reg}/3 allenamenti)</small>`:""}</div>`+
+    order.map((g,i)=>card(g[0],g[1],ps.filter(p=>p.gruppo===g[0]),g[0]===own||(!own&&i===0))).join("")+
+    (un.length&&isAdmin()?card("senza","Senza gruppo",un,false):"")+`</div>`}
 function trainingView(){
   const ps=roster();const days=weekDays(S.trWeek);
   const dayBtns=days.map((d,i)=>{const reg=!!S.trainings[d];const fut=d>todayIso;
@@ -423,24 +477,39 @@ function trainingView(){
   }
   return`<div class="stack"><div class="head"><div><h2>Allenamenti</h2><p class="sub">Tutti sono presenti di default: segna solo chi manca.</p></div>
     <button class="btn" type="button" data-a="gorecap">Recap convocabili</button></div>
+    ${groupRecap()}
     <div class="row" style="justify-content:space-between"><div class="weeknav"><button class="iconbtn" type="button" data-a="trweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.trWeek)}</span><button class="iconbtn" type="button" data-a="trweek" data-v="1" aria-label="Settimana successiva">›</button></div></div>
     <div class="days">${dayBtns}</div>${body}</div>`;
 }
 
 /* --- recap --- */
 function fmtWhen(q){const m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(q||""));if(!m)return"il "+q;const d=new Date(+m[1],+m[2]-1,+m[3]);const g=["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"][d.getDay()];const mese=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"][d.getMonth()];return"il "+g+" "+(+m[3])+" "+mese+" alle "+m[4]+":"+m[5]}
+function weekMatches(mon){return Object.entries(S.matches).map(([id,m])=>Object.assign({id},m)).filter(m=>m.data&&iso(matchWeek(m.data))===iso(mon)).sort((a,b)=>((a.data||"")+(a.ora||"99")).localeCompare((b.data||"")+(b.ora||"99")))}
+function matchChips(pid,wm){return wm.filter(m=>m.giocatori&&m.giocatori[pid]).map(m=>{const off=!!m.giocatori[pid].assente;return`<span class="mchip${off?" off":""}">⚽ ${esc(fmtDay(m.data).replace(/ (\w{3})$/,""))}${m.ora?" "+esc(m.ora):""} ${esc(m.avversario||"partita")}${off?" · assente":""}</span>`}).join("")}
+function convUi(pid,wm){if(!wm.length)return"";const open=S.rcOpen===pid;const sh=m=>esc(fmtDay(m.data).replace(/ (\w{3})$/,""))+(m.ora?" "+esc(m.ora):"")+" "+esc(m.avversario||"partita");
+  if(!open){const c=matchChips(pid,wm);return`<div class="mchips">${c}<button class="mbtn" type="button" data-a="rcopen" data-v="${esc(pid)}">${c?"Modifica":"⚽ Convoca"}</button></div>`}
+  return`<div class="mpick">${wm.map(m=>{const g=m.giocatori&&m.giocatori[pid];return`<button class="mopt${g?" on":""}" type="button" data-a="rcconv" data-v="${esc(pid)}" data-m="${esc(m.id)}" aria-pressed="${!!g}"><span class="ck">${g?"✓":""}</span><span>${sh(m)}${g&&g.assente?" · assente":""}</span></button>`}).join("")}<button class="mbtn" type="button" data-a="rcopen" data-v="">Fatto</button></div>`}
+async function toggleConv(pid,mid){
+  const ok=await write(async db=>{const d=await gs("getAll",S.token);applyData(d);lastLoad=Date.now();
+    const m=S.matches[mid];if(!m)throw new Error("Partita non trovata: ricarica la pagina");
+    const gi=Object.assign({},m.giocatori||{});
+    if(gi[pid]){if((+gi[pid].min||0)>0)throw new Error("Ha minuti giocati: toglilo dalla scheda della partita");delete gi[pid]}else gi[pid]={min:0,assente:false};
+    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:m.avversario||"",campo:m.campo||"casa",golFatti:m.golFatti==null?"":m.golFatti,golSubiti:m.golSubiti==null?"":m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
+    await db.doc("matches/"+mid).set(body)},"");
+  if(ok)render()}
 function recapGroups(mon){const g={doppia:[],conv:[],non:[]};roster().forEach(p=>{const w=weekInfo(p.id,mon);g[w.st].push({p,w})});return g}
 function ticks(marks){return`<span class="ticks">${marks.map((m,i)=>`<span class="tick ${m===true?"y":m===false?"n":""}" title="${DAYNAMES[i]}: ${m===true?"presente":m===false?"assente":"non registrato"}">${DAYNAMES[i][0]}</span>`).join("")}</span>`}
 function recapView(){
   const ps=roster();const days=weekDays(S.recapWeek);const reg=days.filter(d=>S.trainings[d]).length;
   const missing=days.map((d,i)=>S.trainings[d]?null:DAYNAMES[i]+" "+fmtShort(d)).filter(Boolean);
-  const g=recapGroups(S.recapWeek);
+  const g=recapGroups(S.recapWeek);const wm=weekMatches(S.recapWeek);
   const grp=k=>`<section class="group g-${k}"><header><b>${ST[k].g}</b><span class="count num">${g[k].length}</span></header>
-    ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
+    ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}${convUi(p.id,wm)}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
   return`<div class="stack"><div class="head"><div><h2>Recap settimana</h2><p class="sub">Sotto 2 presenze non convocabile · 2 su 3 convocabile · 3 su 3 candidato alla doppia. Portieri convocabili già con 1 su 3.</p></div>
     <button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div>
     <div class="weeknav"><button class="iconbtn" type="button" data-a="rcweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.recapWeek)}</span><button class="iconbtn" type="button" data-a="rcweek" data-v="1" aria-label="Settimana successiva">›</button></div>
     ${reg<3?`<div class="note warn">Allenamenti registrati: ${reg} su 3. Recap provvisorio${missing.length?" — mancano "+missing.join(", "):""}.</div>`:`<div class="note">Tutti e 3 gli allenamenti della settimana sono registrati.</div>`}
+    ${wm.length?`<div class="note">${wm.map(m=>`<div><b>${esc(fmtDay(m.data))}${m.ora?" · "+esc(m.ora):""}</b> ${esc(m.avversario||"partita")} · ${Object.keys(m.giocatori||{}).length?Object.keys(m.giocatori).length+" convocati":"convocati da inserire"}</div>`).join("")}</div>`:""}
     ${ps.length?`<div class="groups">${grp("doppia")}${grp("conv")}${grp("non")}</div>`:noPlayers()}</div>`;
 }
 function recapText(){const g=recapGroups(S.recapWeek);const reg=weekDays(S.recapWeek).filter(d=>S.trainings[d]).length;
@@ -448,14 +517,20 @@ function recapText(){const g=recapGroups(S.recapWeek);const reg=weekDays(S.recap
   return`DF Academy 2018 – settimana ${weekLabel(S.recapWeek)}${reg<3?" (provvisorio, "+reg+"/3 allenamenti)":""}\n\n⭐ CANDIDATI DOPPIA (3/3)\n${line(g.doppia)}\n\n✅ CONVOCABILI (2/3 · portieri 1/3)\n${line(g.conv)}\n\n❌ NON CONVOCABILI\n${line(g.non)}`}
 
 /* --- partite --- */
+function matchCard(m){const n=Object.keys(m.giocatori||{}).length;const has=!(m.golFatti==null||m.golFatti==="")&&!(m.golSubiti==null||m.golSubiti==="");
+  return`<button class="mcard" type="button" data-a="openmatch" data-v="${m.id}"><div class="mtime num">${esc(m.ora||"–:–")}</div>
+    <div class="minfo"><b>${esc(m.avversario||"—")}</b><small>${m.campo==="trasferta"?"Trasferta":"Casa"}${m.mister?" · mister "+esc(m.mister):""}${n?" · "+n+" convocati":""}</small></div>
+    <div class="mres">${has?`<span class="num">${esc(m.golFatti)}–${esc(m.golSubiti)}</span>`:n?`<span class="num" style="opacity:.45">–</span>`:`<span class="badge b-warn">da compilare</span>`}</div></button>`}
 function matchesView(){
-  const ms=Object.entries(S.matches).map(([id,m])=>Object.assign({id},m)).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+  const all=Object.entries(S.matches).map(([id,m])=>Object.assign({id},m));const t=todayIso;
+  const byTime=(x,y)=>(x.ora||"99:99").localeCompare(y.ora||"99:99");
+  const days=arr=>[...new Set(arr.map(m=>m.data||""))];
+  const sect=(title,arr,desc)=>{if(!arr.length)return"";const ds=days(arr).sort();if(desc)ds.reverse();
+    return`<h3 class="dayh">${title}</h3>`+ds.map(d=>`<div class="dayg"><div class="dayl">${esc(d?fmtDay(d):"Senza data")}</div>${arr.filter(m=>(m.data||"")===d).sort(byTime).map(matchCard).join("")}</div>`).join("")};
+  const next=all.filter(m=>(m.data||"")>=t),past=all.filter(m=>(m.data||"")<t);
   return`<div class="stack"><div class="head"><div><h2>Partite</h2><p class="sub">Convocati, risultato e minuti giocati di ogni partita del fine settimana.</p></div>
     <button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div>
-    ${!roster().length?noPlayers():ms.length?`<div class="tablewrap"><table><thead><tr><th>Data</th><th>Avversario</th><th class="r">Risultato</th><th class="r hide-s">Convocati</th></tr></thead><tbody>
-    ${ms.map(m=>`<tr class="click" data-a="openmatch" data-v="${m.id}" tabindex="0"><td class="num">${esc(m.data?fmtDay(m.data):"")}${m.ora?`<br><small style="color:var(--muted)">ore ${esc(m.ora)}</small>`:""}</td><td><b>${esc(m.avversario||"—")}</b>${Object.keys(m.giocatori||{}).length?"":` <span class="badge b-warn">da compilare</span>`}<br><small style="color:var(--muted)">${m.campo==="trasferta"?"Trasferta":"Casa"}${m.mister?" · mister "+esc(m.mister):""}</small></td>
-      <td class="r score num">${m.golFatti==null||m.golFatti===""?"–":esc(m.golFatti)}–${m.golSubiti==null||m.golSubiti===""?"–":esc(m.golSubiti)}</td><td class="r num hide-s">${Object.keys(m.giocatori||{}).length}</td></tr>`).join("")}</tbody></table></div>`
-    :`<div class="panel"><h3>Nessuna partita registrata</h3><p style="margin:0">Dopo la partita del fine settimana premi <b>Nuova partita</b>: segna i convocati e i minuti. Le statistiche compaiono nella scheda di ogni giocatore.</p></div>`}</div>`;
+    ${!roster().length?noPlayers():all.length?sect(next.length&&past.length?"Prossime":"",next,false).replace('<h3 class="dayh"></h3>',"")+sect(next.length?"Giocate":"",past,true).replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>Nessuna partita registrata</h3><p style="margin:0">Dopo la partita del fine settimana premi <b>Nuova partita</b>: segna i convocati e i minuti. Le statistiche compaiono nella scheda di ogni giocatore.</p></div>`}</div>`;
 }
 function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
 function matchForm(){
@@ -535,6 +610,7 @@ function playerEditForm(pid,p){const adm=isAdmin();
       <div class="field"><label for="pe_c">Cognome</label><input id="pe_c" name="cognome" value="${esc(p.cognome)}" required></div>
       <div class="field"><label for="pe_n">Nome</label><input id="pe_n" name="nome" value="${esc(p.nome)}"></div>
       <div class="field"><label for="pe_num">Numero</label><input id="pe_num" name="numero" inputmode="numeric" value="${esc(p.numero)}"></div>
+      <div class="field"><label for="pe_g">Gruppo mister</label><select id="pe_g" name="gruppo"><option value="">—</option>${GRUPPI.map(g=>`<option value="${g[0]}" ${p.gruppo===g[0]?"selected":""}>${g[1]}</option>`).join("")}</select></div>
       <div class="field"><label for="pe_r">Ruolo</label><select id="pe_r" name="ruolo">${ROLES.map(r=>`<option value="${r}" ${p.ruolo===r?"selected":""}>${r||"—"}</option>`).join("")}</select></div>
       <div class="field"><label for="pe_b">Data di nascita</label><input id="pe_b" name="nascita" type="date" value="${esc(p.nascita)}"></div>
       <div class="field"><label for="pe_cm">Certificato medico valido fino al</label><input id="pe_cm" name="certificato" type="date" value="${esc(p.certificato)}"></div>`:""}
@@ -554,7 +630,7 @@ document.addEventListener("submit",async e=>{
     const ok=await write(async()=>{applyData(await gs("aggiungiGiocatori",S.token,list));lastLoad=Date.now()},lines.length+" giocatori aggiunti");
     if(ok){S.showBulk=false;render()}return}
   if(f.id==="playerForm"){const pid=f.dataset.v;const fd=new FormData(f);const data={note:(fd.get("note")||"").toString()};
-    if(isAdmin())["cognome","nome","numero","ruolo","nascita","certificato"].forEach(k=>data[k]=(fd.get(k)||"").toString().trim());
+    if(isAdmin())["cognome","nome","numero","ruolo","gruppo","nascita","certificato"].forEach(k=>data[k]=(fd.get(k)||"").toString().trim());
     const ok=await write(db=>db.doc("players/"+pid).update(data),"Scheda salvata");if(ok){S.playerEdit=null;S.pending=false;render()}}
 });
 document.addEventListener("click",async e=>{
@@ -586,6 +662,9 @@ document.addEventListener("click",async e=>{
   case"mabs":{const g=S.matchEdit.giocatori[v];if(g){g.assente=true;g.min="";S.pending=false;render()}break}
   case"fullmin":{const m=S.matchEdit;if(m.giocatori[v]){m.giocatori[v].min=+m.durata||45;const i=document.querySelector(`[data-pm="${v}"]`);if(i)i.value=m.giocatori[v].min}break}
   case"convsugg":{const m=S.matchEdit;const mon=matchWeek(m.data||todayIso);roster().forEach(p=>{if(weekInfo(p.id,mon).count>=2&&!m.giocatori[p.id])m.giocatori[p.id]={min:"",gol:0}});render();break}
+  case"gtoggle":{S.gOpen=S.gOpen||{};const cur=(v in S.gOpen)?S.gOpen[v]:(v===gOf(S.user));S.gOpen[v]=!cur;render();break}
+  case"rcopen":S.rcOpen=(!v||S.rcOpen===v)?null:v;render();break
+  case"rcconv":toggleConv(v,el.dataset.m);break
   case"savematch":{const m=S.matchEdit;if(!m.data){toast("Inserisci la data della partita");return}
     const gi={};Object.entries(m.giocatori).forEach(([pid,g])=>{if(S.players[pid])gi[pid]={min:g.assente?0:Math.max(0,+g.min||0),assente:!!g.assente}});
     const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
@@ -662,6 +741,6 @@ S.dl=true;render();initDb();
 })();
 </script>
 
-<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}</script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{}))}</script>
 </body>
 </html>
