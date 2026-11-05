@@ -311,6 +311,7 @@ body.is-login::before{background:transparent}
 .gname i{font-style:normal;opacity:.6;margin-left:6px;font-size:12px}
 .gnone{color:var(--muted);font-size:13px}
 .ghd{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px;font-size:15px;text-transform:uppercase;letter-spacing:.04em}.ghd small{font-size:12px;opacity:.7;text-transform:none;letter-spacing:0}.ghd.own{color:var(--yellow,#ffe600)}
+.mailov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:flex-end}.mailsh{background:var(--surface);border-radius:18px 18px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom,0px));width:100%;max-width:560px;margin:0 auto;border-top:1px solid var(--line)}.mailto{border:1px solid var(--line);border-radius:8px;padding:10px;font-size:14px;line-height:1.5;word-break:break-all}.mailchk{display:flex;gap:10px;align-items:center;font-size:14px;margin:10px 0 4px}
 </style>
 
 </head>
@@ -420,8 +421,15 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 14 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 15 · 5 nov 2026</p></main>${navHtml("bot")}${mailSheet()}`;
 }
+function mailSheet(){const m=S.mail;if(!m)return"";
+  const body=m.loading?`<p class="sub" style="margin:8px 0 18px">Preparo il riepilogo…</p>`:`<div class="sub" style="margin:0 0 12px">${esc(weekLabel(S.recapWeek))} · ${m.partite} partite · ${m.convocazioni} convocazioni</div>
+    <div class="field" style="margin-bottom:10px"><label>Destinatari (dal foglio Impostazioni)</label><div class="mailto">${(m.to||[]).length?m.to.map(esc).join("<br>"):`<span style="opacity:.7">Nessun destinatario</span>`}</div></div>${(m.to||[]).length?"":`<div class="note warn">Scrivi l'indirizzo nel foglio Impostazioni, cella <b>destinatari</b> (più indirizzi separati da virgola), poi riapri questo pannello.</div>`}
+    <label class="mailchk"><input type="checkbox" data-a="mailinc" ${m.includi?"checked":""}> Includi i bambini non convocati</label>
+    ${m.partite?"":`<div class="note warn">Nessuna partita in questa settimana.</div>`}`;
+  return`<div class="mailov"><div class="mailsh" role="dialog" aria-label="Invia resoconto"><h3 style="margin:0 0 4px">Invia resoconto weekend</h3>${body}
+    <div class="row" style="gap:10px;margin-top:14px"><button class="btn" style="flex:1" type="button" data-a="mailclose">Annulla</button><button class="btn primary" style="flex:1.4" type="button" data-a="mailsend" ${(m.loading||m.sending||!m.partite||!(m.to||[]).length)?"disabled":""}>${m.sending?"Invio in corso…":"Invia mail"}</button></div></div></div>`}
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
   if(S.dbState==="error")return`<div class="note warn" style="margin-bottom:14px">Non riesco a caricare i dati. Controlla la connessione e ricarica la pagina.</div>`;
@@ -532,7 +540,7 @@ function recapView(){
   const grp=k=>`<section class="group g-${k}"><header><b>${ST[k].g}</b><span class="count num">${g[k].length}</span></header>
     ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}${convUi(p.id,wm)}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
   return`<div class="stack"><div class="head"><div><h2>Recap settimana</h2><p class="sub">Sotto 2 presenze non convocabile · 2 su 3 convocabile · 3 su 3 candidato alla doppia. Portieri convocabili già con 1 su 3.</p></div>
-    <button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div>
+    <div class="row" style="gap:8px"><button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button><button class="btn" type="button" data-a="mailrecap">✉️ Invia mail</button></div></div>
     <div class="weeknav"><button class="iconbtn" type="button" data-a="rcweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.recapWeek)}</span><button class="iconbtn" type="button" data-a="rcweek" data-v="1" aria-label="Settimana successiva">›</button></div>
     ${reg<3?`<div class="note warn">Allenamenti registrati: ${reg} su 3. Recap provvisorio${missing.length?" — mancano "+missing.join(", "):""}.</div>`:`<div class="note">Tutti e 3 gli allenamenti della settimana sono registrati.</div>`}
     ${wm.length?`<div class="note">${wm.map(m=>`<div><b>${esc(fmtDay(m.data))}${m.ora?" · "+esc(m.ora):""}</b> ${esc(m.avversario||"partita")} · ${Object.keys(m.giocatori||{}).length?Object.keys(m.giocatori).length+" convocati":"convocati da inserire"}</div>`).join("")}</div>`:""}
@@ -688,6 +696,10 @@ document.addEventListener("click",async e=>{
     if(await write(db=>db.doc("trainings/"+S.trDate).delete(),"Allenamento eliminato")){S.draft=null;S.dirty=false;render()}break;
   case"rcweek":S.recapWeek=addDays(S.recapWeek,7*v);render();break;
   case"copyconv":{const m=S.matchEdit;if(!m)break;if(!Object.keys(m.giocatori||{}).length){toast("Nessun convocato da copiare");break}const txt=convText(m);try{await navigator.clipboard.writeText(txt);toast("Convocati copiati: incollali nel gruppo")}catch(x){showCopyFallback(txt)}break}
+  case"mailrecap":{S.mail={loading:true};render();try{const d=await gs("anteprimaResoconto",S.token,iso(S.recapWeek));S.mail=Object.assign({},d)}catch(e){S.mail=null;if(!sessionLost(e))toast(String(e&&e.message||"").replace(/^Error:\s*/,"")||"Non riesco a preparare la mail")}render();break}
+  case"mailinc":if(S.mail){S.mail.includi=!S.mail.includi;render()}break
+  case"mailclose":S.mail=null;render();break
+  case"mailsend":{if(!S.mail||S.mail.sending)break;S.mail.sending=true;render();try{const r=await gs("inviaResoconto",S.token,iso(S.recapWeek),!!S.mail.includi);S.mail=null;toast("Mail inviata a "+r.to.join(", "))}catch(e){if(S.mail)S.mail.sending=false;if(!sessionLost(e))toast(String(e&&e.message||"").replace(/^Error:\s*/,"")||"Invio non riuscito, riprova")}render();break}
   case"copyrecap":{const txt=recapText();try{await navigator.clipboard.writeText(txt);toast("Recap copiato: incollalo nel gruppo")}catch(x){showCopyFallback(txt)}break}
   case"newmatch":S.matchEdit=newMatchDraft();window.scrollTo(0,0);render();break;
   case"openmatch":{const m=S.matches[v];S.matchEdit=JSON.parse(JSON.stringify(Object.assign({id:v,durata:45,giocatori:{}},m)));window.scrollTo(0,0);render();break}
