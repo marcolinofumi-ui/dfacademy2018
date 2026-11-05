@@ -279,6 +279,9 @@ body.is-login::before{background:transparent}
 .minfo b{display:block;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
 .minfo small{color:var(--muted);font-size:13px}
 .mres{text-align:right;font-family:var(--display);font-weight:800;font-size:24px;white-space:nowrap}
+.mchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.mchip{display:inline-block;max-width:100%;font-size:11.5px;font-weight:700;line-height:1.3;background:var(--gold-soft);color:var(--gold);border-radius:10px;padding:3px 9px;white-space:normal;overflow-wrap:anywhere}
+.mchip.off{background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
 </style>
 
 </head>
@@ -386,7 +389,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(u.nome)}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 5 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 6 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -439,18 +442,21 @@ function trainingView(){
 
 /* --- recap --- */
 function fmtWhen(q){const m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(q||""));if(!m)return"il "+q;const d=new Date(+m[1],+m[2]-1,+m[3]);const g=["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"][d.getDay()];const mese=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"][d.getMonth()];return"il "+g+" "+(+m[3])+" "+mese+" alle "+m[4]+":"+m[5]}
+function weekMatches(mon){return Object.entries(S.matches).map(([id,m])=>Object.assign({id},m)).filter(m=>m.data&&iso(matchWeek(m.data))===iso(mon)).sort((a,b)=>((a.data||"")+(a.ora||"99")).localeCompare((b.data||"")+(b.ora||"99")))}
+function matchChips(pid,wm){return wm.filter(m=>m.giocatori&&m.giocatori[pid]).map(m=>{const off=!!m.giocatori[pid].assente;return`<span class="mchip${off?" off":""}">⚽ ${esc(fmtDay(m.data).replace(/ (\w{3})$/,""))}${m.ora?" "+esc(m.ora):""} ${esc(m.avversario||"partita")}${off?" · assente":""}</span>`}).join("")}
 function recapGroups(mon){const g={doppia:[],conv:[],non:[]};roster().forEach(p=>{const w=weekInfo(p.id,mon);g[w.st].push({p,w})});return g}
 function ticks(marks){return`<span class="ticks">${marks.map((m,i)=>`<span class="tick ${m===true?"y":m===false?"n":""}" title="${DAYNAMES[i]}: ${m===true?"presente":m===false?"assente":"non registrato"}">${DAYNAMES[i][0]}</span>`).join("")}</span>`}
 function recapView(){
   const ps=roster();const days=weekDays(S.recapWeek);const reg=days.filter(d=>S.trainings[d]).length;
   const missing=days.map((d,i)=>S.trainings[d]?null:DAYNAMES[i]+" "+fmtShort(d)).filter(Boolean);
-  const g=recapGroups(S.recapWeek);
+  const g=recapGroups(S.recapWeek);const wm=weekMatches(S.recapWeek);
   const grp=k=>`<section class="group g-${k}"><header><b>${ST[k].g}</b><span class="count num">${g[k].length}</span></header>
-    ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
+    ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}${(c=>c?`<div class="mchips">${c}</div>`:"")(matchChips(p.id,wm))}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
   return`<div class="stack"><div class="head"><div><h2>Recap settimana</h2><p class="sub">Sotto 2 presenze non convocabile · 2 su 3 convocabile · 3 su 3 candidato alla doppia. Portieri convocabili già con 1 su 3.</p></div>
     <button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div>
     <div class="weeknav"><button class="iconbtn" type="button" data-a="rcweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.recapWeek)}</span><button class="iconbtn" type="button" data-a="rcweek" data-v="1" aria-label="Settimana successiva">›</button></div>
     ${reg<3?`<div class="note warn">Allenamenti registrati: ${reg} su 3. Recap provvisorio${missing.length?" — mancano "+missing.join(", "):""}.</div>`:`<div class="note">Tutti e 3 gli allenamenti della settimana sono registrati.</div>`}
+    ${wm.length?`<div class="note">${wm.map(m=>`<div><b>${esc(fmtDay(m.data))}${m.ora?" · "+esc(m.ora):""}</b> ${esc(m.avversario||"partita")} · ${Object.keys(m.giocatori||{}).length?Object.keys(m.giocatori).length+" convocati":"convocati da inserire"}</div>`).join("")}</div>`:""}
     ${ps.length?`<div class="groups">${grp("doppia")}${grp("conv")}${grp("non")}</div>`:noPlayers()}</div>`;
 }
 function recapText(){const g=recapGroups(S.recapWeek);const reg=weekDays(S.recapWeek).filter(d=>S.trainings[d]).length;
