@@ -189,7 +189,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
 .ts{display:none}
 @media (max-width:520px){
   body{font-size:14px}
-  .who .nm{display:none}
+  .who{display:flex;align-items:center;gap:8px}.who br{display:none}.who .nm{font-weight:700;font-size:12px;letter-spacing:.03em;color:var(--yellow,#ffe600);white-space:nowrap}
   .bar .wrap{gap:10px;padding-block:6px}
   .crest{width:30px;height:34px}
   .team b{font-size:19px}
@@ -322,7 +322,7 @@ window.onerror=function(m,src,l,c){var a=document.getElementById("app");if(a)a.i
 /* ---------- utenti (password salvate come hash, mai in chiaro) ---------- */
 const LOGO="data:image\/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABfCAMAAABbTvC+AAAAkFBMVEWcqFRPZnhHXojp6yxRZq80Tps1T6FJX6vQ1t9ccLKZpMs5UaeUm7jL0kBwhbp3iLuVpc4+Vn1zhcEUMph9j2FzhcK9zOPFuNIhOp5rfMp2hbl5icKDlL7\/v3\/U1L8AAAAjQI\/8+yYaOJIhPpCrtk1QZneJmFzS2Drm6TJ0hmdmeW+GlWL+\/v05U4i5w0bEy0JlDynEAAAAMHRSTlP\/\/vX\/XtOjlhguH20U\/2cpS\/8n8P9jEhSpTqaPWwQMAP7\/\/\/\/\/\/v\/\/\/\/7+\/wf4\/\/8vBDmZAAAHrElEQVR42q2ah3qsKhCAsW9LO\/X2IIgFQd\/\/7e7MYNu1rJuE7zsnq3F\/xulA2Pvecfg7ikKz+3G287lTGPmM+VF4+FLw5QzYMk3L\/eg94FPisDgQnVy+AmxeEq6ydBxlpqL4aD4JPoQJ9zpsq3XrPmUeT46Hj4PNIYx41cEajwvBe3SjeRz++hjYHBPu18WIlZxLIb3G3SlqPzq\/mEfB5hJGVmedxTIlEIsD0L3Gy8yzcXh6BHwI41HYko1Yhxaq95EnEDsO\/9sHvoRxZKum7N\/YgmpvhhA276fNKhstWZLdUpOJCspM8znWobnulJ0GmQZ2eFkFmxPKOlDTIveudHA9QCNeLzZKAOyfBzMHm+MZ9FoN1IB5K8Jeie0NXwCd+GDLIXLYIKpft+NDqALJ7w4Qe\/KKZVMrGyfOUdjheE6s1axIr6iLWLko9pSdFkyDo5yPhkXWq5vp\/V5WcTUGymxIvMunkqHgPpNDginbXCFVOuGqvB9VpZy+wVyzUXGKSPi9ygddplnEeNOLamVPJXAwyWjgIRjSokpno7Ri0LccVNpYxlFicoErtUpeXAMKLeQyWE5tCY7COokRrEZR18Bpmot7YAfXDvwdJ9Bi7gDBjFHtATt9sT9YxOgrc3DmRC6KYphCqYLMUxY0gnVwHbO4precg6VyMLjwWVdDuPOhZiQsgHMEJyyuFsHwQAcG9UOidI6kBU3RwD0p18CkgjNLUNdsIdAGMFnEc+7Zg2lUV+52BdYhOyv6wjYYyKSDgDMXWzAYtxUMfRvo9KQKWeij8rZU4a40Ed\/Y4A4Bnwb7aBwJ9bb0AWxBfQW\/C+6ursCLCQ8DIPCP7IgfSi6\/DgyCPkUndoowWbyJXapIPTZPEjdfQzM3kWEmysav7zUeg5Evpmf3NRZDBaEI0ZtgKTuBr9xtucJ0gYfglQjZDpDlctIHXnUGMPnbQoRMJFZDSPfgjSpImnVgkKaRa2DPFkNdgJboLpiTGx8BfLQFOvIqWE3SprwLFphuwdsAfCK38MQa2Bu5vXNkG2B8PIsNgA25xQLYuwIXHprBSbwF1s4psGGJ6bNYdhynirJg1B+Dwpo74JxyG4HJegvPuoTr8fyHdm2302GzBSZdoe0Q\/I0vW8+Ve3UTDEjeACPrKfpG4Atar\/QEX5R5FuxAXvcKsjjaDsGGYk+LxTfT\/tyqvFrtF0l7EHeu2wwpb4gVv1y4t96Hkjv6f3bgmxCZB6G809H2Cx9JKi6iX31\/TL3FoEyswH3D5MwG17JrNWV\/X4yNnnTvBZd9zuw7+sSbJDjJaxJBCutpjbVSaDCA5Fp7SqEetBvKyu65nHKrgB+9F3dg0kXbvRHoHxsjwd2aC9yNF8XQAASV6GM8Y9RACZVlAYSlqFMlURP2OIAPvS7glQHjylmG7RWBc2oIYfLyCebSZJH2qcgzSkuqbFkAAV93UcpiMy5uJn5Bb8MEylVxqOBKYBkv37A\/aaGjg1krfDvQUIOJCUpAC1MVGc5O8oWTVdMLZVGUU3hl2qCcDAsQR6UykDxgBOY4i6rSJi+KGsEp6qsVfkFGQhHa6DIBuxipsGnP4OtN0AAuo6KEhsYMpxwY0i2C4bcksSssAsVhouvazHSdR4moABBg1Hf4T1dgBXIvTA04HYIFZkULYE9xa5uUZSA83Ma6UQnXqpyuFpAm7vrvNsiU1qCztyAtKq2QBK7FaKpW5SVMA3Nq2AIAZ6h5jhoXGBgVpWKWmOuVKZmvoXTmGu4cC3PQclBv1a1v0iYLwFIu2cMSOgvAWUQePHXgBjPm682S97crUKyoedbCCDLpsSZgumi4FwR4iwVt3fyAANR0GeR5Aa8PV4yWPZoSW2JuF+mhdu2smCyB5FWigG2K9YWwqHQ2+toUfInarj0ZBu\/+9ZeiTzeTey719Jm4iX7NtxXOerua8dXmZ2xU9LhHOYIpSJa6w12jE\/iwsBFiEr2yaNgxpMyGvDbbYXmh0u59SGTXFfuH5a0bSsst\/4DI1LGl3k+zvNlE5Roc\/fHxvaL182FtF4syRlk\/PvKSVkqr22OHOE8\/POrYmNV9N6pRsCmSPTRo8+PJvryvg11Zha7ooeFhcfTCzZ3CE1W\/gu\/3ZiqSkC59s723GdonNLCUe8mCtmha+3oHbBJaILG9YLd4AI8wlzu7sf9S+VvcaFhttNMqMeaOxLB\/Hrln9xmOpMj9w56N6W+W3o7ld0f9g6oUi077drxD2wxL\/GEMl7PIyOy3vVvpoW3d7uFsYDi4H31gwKbgP2Yv2DinC9S2fsl\/Wv\/5fT\/Y\/EWxXapV34DehgKu8J\/NA8cVxiTUjpVarPqvdtzwwQMWyPpFt35e5pKfAdc8enLTyZzmcmlpKes73K0jocQn12J8YUHGHPdsPnKI1cvcetfqALO19+TdBgOZCGU1VYeQFS1Omk3u9nmeSWzWBdd4iNXfAv\/98HmeMc887xZL3bEbd+Kmtf1pPnW0+RxpR2o9bD+ddsG\/o9fPnpmefL8\/0FSqS06NHx8+f8prQl7fFHobGvMVx8dhpJoR2yj\/9f2LDrx\/J7zq8jBYcd+J976TdPMaWWqjaj9+NV969m+e6ew\/fjZf\/EcFBg6p4dzf7P5zhf8BMFX8l5znSVwAAAAASUVORK5CYII=";
 const MOTIVI=["Giustificata"];
-const GRUPPI=[["gianni","Gianni","g.dipetrillo"],["pierluigi","Pierluigi","p.lucatelli"],["riccardo","Riccardo","r.verde"]];
+const GRUPPI=[["gianni","MR Di Petrillo","g.dipetrillo"],["pierluigi","MR Lucatelli","p.lucatelli"],["riccardo","MR Verde","r.verde"]];
 const gOf=u=>(GRUPPI.find(g=>g[2]===u)||[])[0]||"";
 const MISTER=["Verde","Di Petrillo","Lucatelli"];
 const ROLES=["","Portiere","Difensore","Centrocampista","Attaccante"];
@@ -415,9 +415,9 @@ function render(){
   const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];
   const navHtml=c=>`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
-    <div class="who"><span class="nm">${esc(u.nome)}</span><br><button data-a="logout" type="button">Esci</button></div></div>
+    <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 9 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 10 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -463,7 +463,7 @@ function trList(ps,dr,row){
   const order=[...(mine?[mine]:[]),...GRUPPI.map(g=>g[0]).filter(k=>k!==mine),""];
   return order.map(k=>{const l=ps.filter(p=>(p.gruppo||"")===k);if(!l.length)return"";
     const nm=k?(GRUPPI.find(g=>g[0]===k)||[])[1]||k:"Senza gruppo";const ab=l.filter(p=>dr.assenti[p.id]).length;
-    return`<h3 class="ghd${k===mine?" own":""}">${k===mine?"Il tuo gruppo · ":"Gruppo "}${esc(nm)}<small>${l.length-ab} presenti · ${ab} assenti</small></h3><div class="list">${l.map(row).join("")}</div>`}).join("")}
+    return`<h3 class="ghd${k===mine?" own":""}">${k===mine?"Il tuo gruppo":(k?"Gruppo ":"")+esc(nm)}<small>${l.length-ab} presenti · ${ab} assenti</small></h3><div class="list">${l.map(row).join("")}</div>`}).join("")}
 function trainingView(){
   const ps=roster();const days=weekDays(S.trWeek);
   const dayBtns=days.map((d,i)=>{const reg=!!S.trainings[d];const fut=d>todayIso;
