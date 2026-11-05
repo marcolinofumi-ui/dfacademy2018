@@ -282,6 +282,15 @@ body.is-login::before{background:transparent}
 .mchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .mchip{display:inline-block;max-width:100%;font-size:11.5px;font-weight:700;line-height:1.3;background:var(--gold-soft);color:var(--gold);border-radius:10px;padding:3px 9px;white-space:normal;overflow-wrap:anywhere}
 .mchip.off{background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
+.mbtn{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:10px;padding:3px 10px;font-size:12px;font-weight:700}
+.mpick{display:flex;flex-direction:column;gap:6px;margin-top:6px;max-width:100%}
+.mopt{display:flex;align-items:center;gap:10px;text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 12px;font-size:14px;font-weight:600}
+.mopt .ck{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;font-size:14px;line-height:1}
+.mopt.on{background:var(--gold-soft);border-color:var(--gold);color:var(--fg)}
+.mopt.on .ck{background:var(--gold);border-color:var(--gold);color:#fff}
+.mpick .mbtn{align-self:flex-start;border-style:solid}
+.mopt span:last-child{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
+.mpick{min-width:0}
 </style>
 
 </head>
@@ -389,7 +398,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(u.nome)}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 6 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 7 · 5 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -444,6 +453,17 @@ function trainingView(){
 function fmtWhen(q){const m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(q||""));if(!m)return"il "+q;const d=new Date(+m[1],+m[2]-1,+m[3]);const g=["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"][d.getDay()];const mese=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"][d.getMonth()];return"il "+g+" "+(+m[3])+" "+mese+" alle "+m[4]+":"+m[5]}
 function weekMatches(mon){return Object.entries(S.matches).map(([id,m])=>Object.assign({id},m)).filter(m=>m.data&&iso(matchWeek(m.data))===iso(mon)).sort((a,b)=>((a.data||"")+(a.ora||"99")).localeCompare((b.data||"")+(b.ora||"99")))}
 function matchChips(pid,wm){return wm.filter(m=>m.giocatori&&m.giocatori[pid]).map(m=>{const off=!!m.giocatori[pid].assente;return`<span class="mchip${off?" off":""}">⚽ ${esc(fmtDay(m.data).replace(/ (\w{3})$/,""))}${m.ora?" "+esc(m.ora):""} ${esc(m.avversario||"partita")}${off?" · assente":""}</span>`}).join("")}
+function convUi(pid,wm){if(!wm.length)return"";const open=S.rcOpen===pid;const sh=m=>esc(fmtDay(m.data).replace(/ (\w{3})$/,""))+(m.ora?" "+esc(m.ora):"")+" "+esc(m.avversario||"partita");
+  if(!open){const c=matchChips(pid,wm);return`<div class="mchips">${c}<button class="mbtn" type="button" data-a="rcopen" data-v="${esc(pid)}">${c?"Modifica":"⚽ Convoca"}</button></div>`}
+  return`<div class="mpick">${wm.map(m=>{const g=m.giocatori&&m.giocatori[pid];return`<button class="mopt${g?" on":""}" type="button" data-a="rcconv" data-v="${esc(pid)}" data-m="${esc(m.id)}" aria-pressed="${!!g}"><span class="ck">${g?"✓":""}</span><span>${sh(m)}${g&&g.assente?" · assente":""}</span></button>`}).join("")}<button class="mbtn" type="button" data-a="rcopen" data-v="">Fatto</button></div>`}
+async function toggleConv(pid,mid){
+  const ok=await write(async db=>{const d=await gs("getAll",S.token);applyData(d);lastLoad=Date.now();
+    const m=S.matches[mid];if(!m)throw new Error("Partita non trovata: ricarica la pagina");
+    const gi=Object.assign({},m.giocatori||{});
+    if(gi[pid]){if((+gi[pid].min||0)>0)throw new Error("Ha minuti giocati: toglilo dalla scheda della partita");delete gi[pid]}else gi[pid]={min:0,assente:false};
+    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:m.avversario||"",campo:m.campo||"casa",golFatti:m.golFatti==null?"":m.golFatti,golSubiti:m.golSubiti==null?"":m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
+    await db.doc("matches/"+mid).set(body)},"");
+  if(ok)render()}
 function recapGroups(mon){const g={doppia:[],conv:[],non:[]};roster().forEach(p=>{const w=weekInfo(p.id,mon);g[w.st].push({p,w})});return g}
 function ticks(marks){return`<span class="ticks">${marks.map((m,i)=>`<span class="tick ${m===true?"y":m===false?"n":""}" title="${DAYNAMES[i]}: ${m===true?"presente":m===false?"assente":"non registrato"}">${DAYNAMES[i][0]}</span>`).join("")}</span>`}
 function recapView(){
@@ -451,7 +471,7 @@ function recapView(){
   const missing=days.map((d,i)=>S.trainings[d]?null:DAYNAMES[i]+" "+fmtShort(d)).filter(Boolean);
   const g=recapGroups(S.recapWeek);const wm=weekMatches(S.recapWeek);
   const grp=k=>`<section class="group g-${k}"><header><b>${ST[k].g}</b><span class="count num">${g[k].length}</span></header>
-    ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}${(c=>c?`<div class="mchips">${c}</div>`:"")(matchChips(p.id,wm))}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
+    ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}${convUi(p.id,wm)}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
   return`<div class="stack"><div class="head"><div><h2>Recap settimana</h2><p class="sub">Sotto 2 presenze non convocabile · 2 su 3 convocabile · 3 su 3 candidato alla doppia. Portieri convocabili già con 1 su 3.</p></div>
     <button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div>
     <div class="weeknav"><button class="iconbtn" type="button" data-a="rcweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.recapWeek)}</span><button class="iconbtn" type="button" data-a="rcweek" data-v="1" aria-label="Settimana successiva">›</button></div>
@@ -608,6 +628,8 @@ document.addEventListener("click",async e=>{
   case"mabs":{const g=S.matchEdit.giocatori[v];if(g){g.assente=true;g.min="";S.pending=false;render()}break}
   case"fullmin":{const m=S.matchEdit;if(m.giocatori[v]){m.giocatori[v].min=+m.durata||45;const i=document.querySelector(`[data-pm="${v}"]`);if(i)i.value=m.giocatori[v].min}break}
   case"convsugg":{const m=S.matchEdit;const mon=matchWeek(m.data||todayIso);roster().forEach(p=>{if(weekInfo(p.id,mon).count>=2&&!m.giocatori[p.id])m.giocatori[p.id]={min:"",gol:0}});render();break}
+  case"rcopen":S.rcOpen=(!v||S.rcOpen===v)?null:v;render();break
+  case"rcconv":toggleConv(v,el.dataset.m);break
   case"savematch":{const m=S.matchEdit;if(!m.data){toast("Inserisci la data della partita");return}
     const gi={};Object.entries(m.giocatori).forEach(([pid,g])=>{if(S.players[pid])gi[pid]={min:g.assente?0:Math.max(0,+g.min||0),assente:!!g.assente}});
     const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
