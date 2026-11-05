@@ -17,12 +17,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Annulla la pubblicazione rimasta bloccata
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+      - name: Annulla le pubblicazioni rimaste bloccate
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh api -X POST repos/${{ github.repository }}/pages/deployments/d2678934f4d1ec4b3e296dadfdbc7dfbed6a5758/cancel
-      - uses: actions/checkout@v4
+        run: |
+          for sha in $(git log -30 --format=%H); do
+            gh api -X POST repos/${{ github.repository }}/pages/deployments/$sha/cancel >/dev/null 2>&1 && echo "annullata $sha" || true
+          done
+          sleep 15
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
