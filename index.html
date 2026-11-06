@@ -241,6 +241,12 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
   .mtable tr:not(.on) td:nth-child(4){display:none}
   .mtable tr:not(.on){padding-block:8px}
   .mtable td.r .row{justify-content:flex-start!important}
+  .mtable tr.on{grid-template-columns:28px auto minmax(0,1fr)}
+  .mtable tr.on td:nth-child(2){grid-column:2/4}
+  .mtable tr.on td:nth-child(3){grid-column:2}
+  .mtable tr.on td:nth-child(4){grid-column:3}
+  .mtable tr.on td.r .row{gap:6px}
+  .mtable tr.on td.r input{width:64px}
   .grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 }
 @media (prefers-reduced-motion:no-preference){.btn,.day,.seg button{transition:background .15s,border-color .15s}}
@@ -420,7 +426,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 14.1 · 5 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 15 · 6 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -559,16 +565,49 @@ function matchesView(){
     ${!roster().length?noPlayers():all.length?sect(next.length&&past.length?"Prossime":"",next,false).replace('<h3 class="dayh"></h3>',"")+sect(next.length?"Giocate":"",past,true).replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>Nessuna partita registrata</h3><p style="margin:0">Dopo la partita del fine settimana premi <b>Nuova partita</b>: segna i convocati e i minuti. Le statistiche compaiono nella scheda di ogni giocatore.</p></div>`}</div>`;
 }
 function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
+function gkFirst(l){return l.filter(p=>isGk(p.id)).concat(l.filter(p=>!isGk(p.id)))}
 function convText(m){
-  const l=roster().filter(p=>m.giocatori&&m.giocatori[p.id]);
+  const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
   let d="";if(m.data){const x=new Date(m.data+"T12:00:00");d=x.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});d=d.charAt(0).toUpperCase()+d.slice(1)}
   const L=["⚽ *DF Academy 2018 – Convocati*",(m.avversario?"vs "+m.avversario:"Partita")+" ("+(m.campo==="trasferta"?"trasferta":"casa")+")",(d+(m.ora?" · ore "+m.ora:"")).trim()];
   if(m.mister)L.push("Mister "+m.mister);
   L.push("","Convocati ("+l.length+"):");
   l.forEach((p,i)=>L.push((i+1)+". "+fullName(p)+(isGk(p.id)?" 🧤":"")));
   return L.filter((x,i)=>x||i>2).join("\n")}
+async function exportImg(m){
+  const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
+  const W=1080,H=Math.max(1350,640+l.length*86+110);const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+  const g=x.createLinearGradient(0,0,W*.6,H);g.addColorStop(0,"#1d3a99");g.addColorStop(.7,"#0d1230");x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.fillStyle="#ffd800";x.fillRect(0,0,W,18);
+  const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="icons/icon-512.png"});
+  if(img){x.save();x.beginPath();x.roundRect(80,88,170,170,28);x.clip();x.drawImage(img,80,88,170,170);x.restore()}
+  const F="Arial,Helvetica,sans-serif";x.textBaseline="alphabetic";
+  x.fillStyle="#ffd800";x.font="900 64px "+F;x.fillText("DF ACADEMY",280,175);
+  x.fillStyle="rgba(255,255,255,.8)";x.font="34px "+F;x.fillText("Annata 2018 · Convocati",280,225);
+  x.fillStyle="rgba(255,255,255,.08)";x.beginPath();x.roundRect(80,302,920,199,24);x.fill();
+  x.fillStyle="#fff";x.font="800 52px "+F;x.fillText("vs "+(m.avversario||"—"),110,375);
+  let d="";if(m.data){const dt=new Date(m.data+"T12:00:00");d=dt.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});d=d.charAt(0).toUpperCase()+d.slice(1)}
+  x.fillStyle="rgba(255,255,255,.85)";x.font="34px "+F;x.fillText((d+(m.ora?" · ore "+m.ora:"")+" · "+(m.campo==="trasferta"?"trasferta":"casa")).trim(),110,426);
+  if(m.mister){x.fillStyle="rgba(255,255,255,.7)";x.font="30px "+F;x.fillText("Mister "+m.mister,110,470)}
+  x.fillStyle="#6fd9a0";x.font="700 30px "+F;x.fillText("CONVOCATI ("+l.length+")",80,565);
+  l.forEach((p,i)=>{const y=582+i*86,cy=y+43;
+    x.fillStyle="#ffd800";x.beginPath();x.arc(111,cy,31,0,7);x.fill();
+    x.fillStyle="#0d1230";x.font="700 32px "+F;x.textAlign="center";x.fillText(String(i+1),111,cy+11);x.textAlign="left";
+    x.fillStyle="#fff";x.font="700 46px "+F;const nm=fullName(p);x.fillText(nm,168,cy+16);
+    if(isGk(p.id)){const w=x.measureText(nm).width;x.font="40px "+F;x.fillText("🧤",168+w+14,cy+14)}
+    x.fillStyle="rgba(255,255,255,.12)";x.fillRect(80,y+85,920,2)});
+  x.fillStyle="rgba(255,255,255,.55)";x.font="26px "+F;x.textAlign="center";x.fillText("DF Academy 2018 · registro presenze",W/2,H-40);
+  const blob=await new Promise(r=>c.toBlob(r,"image/png"));if(!blob){toast("Impossibile creare l'immagine");return}
+  const f=new File([blob],"convocati-"+(m.data||"partita")+".png",{type:"image/png"});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==="AbortError")return}
+  const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("Immagine scaricata")}
 function matchForm(){
   const m=S.matchEdit;const ps=roster();const mon=matchWeek(m.data||todayIso);
+  const conv=gkFirst(ps.filter(p=>m.giocatori[p.id])),rest=ps.filter(p=>!m.giocatori[p.id]);
+  const rowOf=p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);return`<tr class="${g?"on":""}"><td><input type="checkbox" id="cv_${p.id}" data-a="conv" data-v="${p.id}" ${g?"checked":""} aria-label="Convoca ${esc(fullName(p))}"></td>
+      <td><label for="cv_${p.id}"><b>${esc(fullName(p))}</b></label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span></td>
+      <td>${g?`<div class="seg" role="group" aria-label="Presenza ${esc(fullName(p))}"><button type="button" class="p" data-a="mpres" data-v="${p.id}" aria-pressed="${!g.assente}">Presente</button><button type="button" class="a" data-a="mabs" data-v="${p.id}" aria-pressed="${!!g.assente}">Assente</button></div>`:""}</td>
+      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><button class="btn small" type="button" data-a="fullmin" data-v="${p.id}" ${g&&!g.assente?"":"disabled"} title="Tutta la partita">Tutta</button><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${g&&!g.assente?esc(g.min):""}" ${g&&!g.assente?"":"disabled"} aria-label="Minuti ${esc(fullName(p))}"></div></td></tr>`};
   return`<div class="stack"><div class="head"><div><h2>${m.id?"Modifica partita":"Nuova partita"}</h2><p class="sub">Spunta i convocati, poi inserisci i minuti. Accanto a ogni nome trovi lo stato della settimana ${weekLabel(mon)}.</p></div>
     <button class="btn" type="button" data-a="closematch">Torna all'elenco</button></div>
     <div class="panel"><div class="grid2">
@@ -582,12 +621,11 @@ function matchForm(){
       <div class="field"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div>
     </div></div>
     <div class="row" style="justify-content:space-between"><h3 style="margin:0">Giocatori · <span class="num" id="convcount">${Object.keys(m.giocatori).length}</span> convocati</h3>
-      <div class="row"><button class="btn small" type="button" data-a="convsugg">Convoca i convocabili</button><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button></div></div>
+      <div class="row"><button class="btn small" type="button" data-a="convsugg">Convoca i convocabili</button><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button><button class="btn small" type="button" data-a="expimg">Esporta immagine</button></div></div>
     <div class="tablewrap mtable"><table><thead><tr><th>Conv.</th><th>Giocatore</th><th>Presenza</th><th class="r">Minuti</th></tr></thead><tbody>
-    ${ps.map(p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);return`<tr class="${g?"on":""}"><td><input type="checkbox" id="cv_${p.id}" data-a="conv" data-v="${p.id}" ${g?"checked":""} aria-label="Convoca ${esc(fullName(p))}"></td>
-      <td><label for="cv_${p.id}"><b>${esc(fullName(p))}</b></label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span></td>
-      <td>${g?`<div class="seg" role="group" aria-label="Presenza ${esc(fullName(p))}"><button type="button" class="p" data-a="mpres" data-v="${p.id}" aria-pressed="${!g.assente}">Presente</button><button type="button" class="a" data-a="mabs" data-v="${p.id}" aria-pressed="${!!g.assente}">Assente</button></div>`:""}</td>
-      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><button class="btn small" type="button" data-a="fullmin" data-v="${p.id}" ${g&&!g.assente?"":"disabled"} title="Tutta la partita">Tutta</button><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${g&&!g.assente?esc(g.min):""}" ${g&&!g.assente?"":"disabled"} aria-label="Minuti ${esc(fullName(p))}"></div></td></tr>`}).join("")}</tbody></table></div>
+    ${conv.length?conv.map(rowOf).join(""):`<tr><td colspan="4" class="sub" style="display:block;padding:14px">Nessun convocato: usa "Aggiungi giocatori".</td></tr>`}</tbody></table></div>
+    <button class="btn" type="button" style="width:100%" data-a="addopen">${S.addOpen?"– Nascondi non convocati":"+ Aggiungi giocatori ("+rest.length+" non convocati)"}</button>
+    ${S.addOpen&&rest.length?`<div class="tablewrap mtable"><table><tbody>${rest.map(rowOf).join("")}</tbody></table></div>`:""}
     ${m.id&&isAdmin()?`<div><button class="btn danger small" type="button" data-a="delmatch">Elimina partita</button></div>`:""}
     <div class="savebar"><div class="wrap"><div class="grow">${esc(m.avversario||"Partita")} · ${m.data?fmtDay(m.data):""}</div><button class="btn" type="button" data-a="closematch">Annulla</button><button class="btn primary" type="button" data-a="savematch">Salva partita</button></div></div></div>`;
 }
@@ -689,8 +727,10 @@ document.addEventListener("click",async e=>{
   case"rcweek":S.recapWeek=addDays(S.recapWeek,7*v);render();break;
   case"copyconv":{const m=S.matchEdit;if(!m)break;if(!Object.keys(m.giocatori||{}).length){toast("Nessun convocato da copiare");break}const txt=convText(m);try{await navigator.clipboard.writeText(txt);toast("Convocati copiati: incollali nel gruppo")}catch(x){showCopyFallback(txt)}break}
   case"copyrecap":{const txt=recapText();try{await navigator.clipboard.writeText(txt);toast("Recap copiato: incollalo nel gruppo")}catch(x){showCopyFallback(txt)}break}
-  case"newmatch":S.matchEdit=newMatchDraft();window.scrollTo(0,0);render();break;
-  case"openmatch":{const m=S.matches[v];S.matchEdit=JSON.parse(JSON.stringify(Object.assign({id:v,durata:45,giocatori:{}},m)));window.scrollTo(0,0);render();break}
+  case"addopen":S.addOpen=!S.addOpen;render();break;
+  case"expimg":{const m=S.matchEdit;if(!m)break;if(!Object.keys(m.giocatori||{}).length){toast("Nessun convocato da esportare");break}await exportImg(m);break}
+  case"newmatch":S.addOpen=false;S.matchEdit=newMatchDraft();window.scrollTo(0,0);render();break;
+  case"openmatch":{S.addOpen=false;const m=S.matches[v];S.matchEdit=JSON.parse(JSON.stringify(Object.assign({id:v,durata:45,giocatori:{}},m)));window.scrollTo(0,0);render();break}
   case"closematch":S.matchEdit=null;S.pending=false;render();break;
   case"conv":{const m=S.matchEdit;if(el.checked)m.giocatori[v]={min:"",gol:0};else delete m.giocatori[v];S.pending=false;render();break}
   case"mpres":{const g=S.matchEdit.giocatori[v];if(g){g.assente=false;S.pending=false;render()}break}
