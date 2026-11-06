@@ -246,7 +246,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
   .mtable tr.on td:nth-child(3){grid-column:2}
   .mtable tr.on td:nth-child(4){grid-column:3}
   .mtable tr.on td.r .row{gap:6px}
-  .mtable tr.on td.r input{width:64px}
+  .mtable tr.on td.r input{width:90px}
   .grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 }
 @media (prefers-reduced-motion:no-preference){.btn,.day,.seg button{transition:background .15s,border-color .15s}}
@@ -607,7 +607,7 @@ function matchForm(){
   const rowOf=p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);return`<tr class="${g?"on":""}"><td><input type="checkbox" id="cv_${p.id}" data-a="conv" data-v="${p.id}" ${g?"checked":""} aria-label="Convoca ${esc(fullName(p))}"></td>
       <td><label for="cv_${p.id}"><b>${esc(fullName(p))}</b></label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span></td>
       <td>${g?`<div class="seg" role="group" aria-label="Presenza ${esc(fullName(p))}"><button type="button" class="p" data-a="mpres" data-v="${p.id}" aria-pressed="${!g.assente}">Presente</button><button type="button" class="a" data-a="mabs" data-v="${p.id}" aria-pressed="${!!g.assente}">Assente</button></div>`:""}</td>
-      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><button class="btn small" type="button" data-a="fullmin" data-v="${p.id}" ${g&&!g.assente?"":"disabled"} title="Tutta la partita">Tutta</button><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${g&&!g.assente?esc(g.min):""}" ${g&&!g.assente?"":"disabled"} aria-label="Minuti ${esc(fullName(p))}"></div></td></tr>`};
+      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${g&&!g.assente?esc(g.min):""}" ${g&&!g.assente?"":"disabled"} aria-label="Minuti ${esc(fullName(p))}" placeholder="Minuti"></div></td></tr>`};
   return`<div class="stack"><div class="head"><div><h2>${m.id?"Modifica partita":"Nuova partita"}</h2><p class="sub">Spunta i convocati, poi inserisci i minuti. Accanto a ogni nome trovi lo stato della settimana ${weekLabel(mon)}.</p></div>
     <button class="btn" type="button" data-a="closematch">Torna all'elenco</button></div>
     <div class="panel"><div class="grid2">
@@ -621,7 +621,7 @@ function matchForm(){
       <div class="field"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div>
     </div></div>
     <div class="row" style="justify-content:space-between"><h3 style="margin:0">Giocatori · <span class="num" id="convcount">${Object.keys(m.giocatori).length}</span> convocati</h3>
-      <div class="row"><button class="btn small" type="button" data-a="convsugg">Convoca i convocabili</button><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button><button class="btn small" type="button" data-a="expimg">Esporta immagine</button></div></div>
+      <div class="row"><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button><button class="btn small" type="button" data-a="expimg">Esporta immagine</button></div></div>
     <div class="tablewrap mtable"><table><thead><tr><th>Conv.</th><th>Giocatore</th><th>Presenza</th><th class="r">Minuti</th></tr></thead><tbody>
     ${conv.length?conv.map(rowOf).join(""):`<tr><td colspan="4" class="sub" style="display:block;padding:14px">Nessun convocato: usa "Aggiungi giocatori".</td></tr>`}</tbody></table></div>
     <button class="btn" type="button" style="width:100%" data-a="addopen">${S.addOpen?"– Nascondi non convocati":"+ Aggiungi giocatori ("+rest.length+" non convocati)"}</button>
