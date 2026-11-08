@@ -384,7 +384,7 @@ function playerStats(pid,from,to){
   const ms=Object.entries(S.matches).map(([id,m])=>Object.assign({id},m)).filter(m=>Object.keys(m.giocatori||{}).length>0).filter(m=>(!from&&!to)||inR(m.data)).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
   const wk=m=>iso(monday(parse(m.data)));const allW=new Set(ms.map(wk)),myW=new Set();
   let conv=0,played=0,min=0;const list=[];
-  ms.forEach(m=>{const g=m.giocatori&&m.giocatori[pid];if(g){conv++;const mm=+g.min||0;if(mm>0){played++;myW.add(wk(m))}min+=mm;list.push({m,min:mm,ass:!!g.assente})}});
+  ms.forEach(m=>{const g=m.giocatori&&m.giocatori[pid];if(g){conv++;const mm=+g.min||0;if(!g.assente){played++;myW.add(wk(m))}min+=mm;list.push({m,min:mm,ass:!!g.assente})}});
   return{trTot:tr.length,pres,trPct:pct(pres,tr.length),mTot:ms.length,wTot:allW.size,wPlayed:myW.size,conv,played,mPct:pct(myW.size,allW.size),min,avg:played?Math.round(min/played):0,list,trList:tr.slice(-12).reverse()}
 }
 function certState(p){if(!p.certificato)return null;const d=parse(p.certificato);const days=Math.round((d-new Date(today.getFullYear(),today.getMonth(),today.getDate()))/864e5);
@@ -664,7 +664,7 @@ function playerCard(pid){
     <div class="row"><span class="badge ${ST[w.st].c}">Questa settimana: ${w.count}/3 · ${ST[w.st].l}</span>${c?`<span class="badge ${c.c}">${esc(c.l)}</span>`:p.certificato?`<span class="badge b-conv">Certificato valido fino al ${esc(fmtShort(p.certificato))}</span>`:""}</div>
     ${periodBar()}
     <div class="tiles">${tile("Presenza allenamenti",s.trPct+"%",s.pres+" su "+s.trTot+" allenamenti"+(filt?" nel periodo":""),s.trPct,filt?T.trPct+"% ("+T.pres+" su "+T.trTot+")":"")}
-      ${tile("Presenza partite",s.mPct+"%","in campo "+s.wPlayed+" weekend su "+s.wTot+" · "+s.played+" partite giocate",s.mPct,filt?T.mPct+"% ("+T.wPlayed+" weekend su "+T.wTot+")":"")}
+      ${tile("Presenza partite",s.mPct+"%","presente "+s.wPlayed+" weekend su "+s.wTot+" · "+s.played+" partite",s.mPct,filt?T.mPct+"% ("+T.wPlayed+" weekend su "+T.wTot+")":"")}
       ${tile("Minuti giocati",s.min+"'","media "+s.avg+"' a partita",null,filt?T.min+"' · media "+T.avg+"'":"")}</div>
     ${p.note?`<div class="panel"><h3>Note del mister</h3><p style="margin:0;white-space:pre-wrap">${esc(p.note)}</p></div>`:""}
     <div class="panel"><h3>${filt?"Allenamenti nel periodo":"Ultimi allenamenti"}</h3>${s.trList.length?`<div class="hist">${s.trList.map(d=>{const t=S.trainings[d];const m=t.assenti&&t.assenti[pid];return`<span class="tick ${m?"n":"y"}" title="${esc(fmtDay(d))}${m?" · "+esc(m):""}">${esc(fmtShort(d))}</span>`}).join("")}</div>
