@@ -366,7 +366,7 @@ const S={
   user:null,me:null,token:null,tab:"allenamenti",dbState:"loading",
   players:{},trainings:{},matches:{},got:{p:false,t:false,m:false},
   trWeek:monday(today),trDate:defaultTrainingDate(),draft:null,dirty:false,
-  recapWeek:monday(today),
+  recapWeek:monday(today),convWeek:monday(today),
   matchEdit:null,pf:{key:"all",from:"",to:""},playerOpen:null,playerEdit:null,showBulk:false,sort:"cognome",pending:false,saving:false
 };
 try{const sv=JSON.parse(store.get("dfa-sess")||"null");if(sv&&sv.token){S.token=sv.token;S.me=sv;S.user=sv.user}}catch(e){}
@@ -424,13 +424,13 @@ function render(){
   document.body.classList.toggle("is-login",!S.user);
   if(!S.user){app.innerHTML=loginView();return}
   const u=S.me||{nome:""};
-  const ICO={allenamenti:'<path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm4 10 2 2 4-4"/>',recap:'<path d="M5 20V10m7 10V4m7 16v-7"/>',partite:'<circle cx="12" cy="12" r="9"/><path d="m12 8 3.5 2.5-1.3 4h-4.4l-1.3-4Zm0-6v6m3.5 2.5L21 9.8M14.2 14.5l3.2 4.4M9.8 14.5l-3.200 4.4M8.500 10.500 3 9.800"/>',rosa:'<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.200A6.500 6.500 0 0 1 21.500 20"/>'};
-  const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];
+  const ICO={convocazioni:'<path d="M9 4.5h6M9 4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5M9 4.5H6.5A1.5 1.5 0 0 0 5 6v13.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H15m-6 8 2 2 4-4"/>',allenamenti:'<path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm4 10 2 2 4-4"/>',recap:'<path d="M5 20V10m7 10V4m7 16v-7"/>',partite:'<circle cx="12" cy="12" r="9"/><path d="m12 8 3.5 2.5-1.3 4h-4.4l-1.3-4Zm0-6v6m3.5 2.5L21 9.8M14.2 14.5l3.2 4.4M9.8 14.5l-3.200 4.4M8.500 10.500 3 9.800"/>',rosa:'<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.200A6.500 6.500 0 0 1 21.500 20"/>'};
+  const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["partite","Partite","Partite"],["convocazioni","Convocazioni","Convoc."],["rosa","Rosa e schede","Rosa"]];
   const navHtml=c=>`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 16 · 6 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 16 · 8 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -441,6 +441,7 @@ function view(){
   if(S.dbState==="loading"&&!S.got.p)return`<div class="loading">Carico rosa e presenze…</div>`;
   if(S.tab==="allenamenti")return trainingView();
   if(S.tab==="recap")return recapView();
+  if(S.tab==="convocazioni")return convView();
   if(S.tab==="partite")return S.matchEdit?matchForm():matchesView();
   if(S.tab==="rosa")return S.playerOpen?playerCard(S.playerOpen):rosaView();
   return"";
@@ -542,7 +543,7 @@ function recapView(){
   const grp=k=>`<section class="group g-${k}"><header><b>${ST[k].g}</b><span class="count num">${g[k].length}</span></header>
     ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}${convUi(p.id,wm)}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
   return`<div class="stack"><div class="head"><div><h2>Recap settimana</h2><p class="sub">Sotto 2 presenze non convocabile · 2 su 3 convocabile · 3 su 3 candidato alla doppia. Per i portieri basta 1 presenza su 3, anche per la doppia.</p></div>
-    <div class="row"><button class="btn" type="button" data-a="pdfweek" ${wm.length?"":"disabled"}>Esporta PDF</button><button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div></div>
+    <div class="row"><button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div></div>
     <div class="weeknav"><button class="iconbtn" type="button" data-a="rcweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.recapWeek)}</span><button class="iconbtn" type="button" data-a="rcweek" data-v="1" aria-label="Settimana successiva">›</button></div>
     ${reg<3?`<div class="note warn">Allenamenti registrati: ${reg} su 3. Recap provvisorio${missing.length?" — mancano "+missing.join(", "):""}.</div>`:`<div class="note">Tutti e 3 gli allenamenti della settimana sono registrati.</div>`}
     ${wm.length?`<div class="note">${wm.map(m=>`<div><b>${esc(fmtDay(m.data))}${m.ora?" · "+esc(m.ora):""}</b> ${esc(m.avversario||"partita")} · ${Object.keys(m.giocatori||{}).length?Object.keys(m.giocatori).length+" convocati":"convocati da inserire"}</div>`).join("")}</div>`:""}
@@ -557,6 +558,19 @@ function matchCard(m){const n=Object.keys(m.giocatori||{}).length;const has=!(m.
   return`<button class="mcard" type="button" data-a="openmatch" data-v="${m.id}"><div class="mtime num">${esc(m.ora||"–:–")}</div>
     <div class="minfo"><b>${esc(m.avversario||"—")}</b><small>${m.campo==="trasferta"?"Trasferta":"Casa"}${m.mister?" · mister "+esc(m.mister):""}${n?" · "+n+" convocati":""}</small></div>
     <div class="mres">${has?`<span class="num">${esc(m.golFatti)}–${esc(m.golSubiti)}</span>`:n?`<span class="num" style="opacity:.45">–</span>`:`<span class="badge b-warn">da compilare</span>`}</div></button>`}
+function convView(){
+  const mon=S.convWeek;const wm=weekMatches(mon).filter(m=>m.giocatori&&Object.keys(m.giocatori).length);const all=weekMatches(mon);
+  const cnt={};wm.forEach(m=>Object.keys(m.giocatori).forEach(id=>{if(S.players[id])cnt[id]=(cnt[id]||0)+1}));
+  const tot=Object.keys(cnt).length,dbl=Object.values(cnt).filter(n=>n>1).length;
+  const card=m=>{const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
+    let d="";if(m.data){const x=new Date(m.data+"T12:00:00");d=x.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});d=d.charAt(0).toUpperCase()+d.slice(1)}
+    return`<section class="panel stack" style="gap:10px"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="sub" style="margin:0">${esc(d)}</div><h3 style="margin:2px 0 0;font-size:20px;text-transform:none;letter-spacing:0;color:var(--text)">vs ${esc(m.avversario||"da definire")}</h3></div><button class="btn small" type="button" data-a="gomatch" data-v="${m.id}">Modifica</button></div>
+      <div class="sub" style="margin:0;line-height:1.7">🕙 <b>${esc(m.ora||"orario da definire")}</b> · ritrovo <b>${m.ora?esc(minusMin(m.ora,45)):"da definire"}</b><br>📍 ${m.luogo?esc(m.luogo):`<span style="color:var(--warn,#e0a030)">luogo da definire</span>`} · ${m.campo==="trasferta"?"trasferta":"casa"}<br>👤 mister ${esc(m.mister||"–")} · dirigente ${esc(m.dirigente||"–")}</div>
+      <div><h3 style="margin:0 0 6px">Convocati (${l.length})</h3>${l.length?`<div class="mchips">${l.map(p=>`<span class="mchip">${esc(fullName(p))}${isGk(p.id)?" 🧤":""}${cnt[p.id]>1?" ×"+cnt[p.id]:""}</span>`).join("")}</div>`:`<p class="sub" style="margin:0">Nessun convocato: sceglili dal Recap settimana.</p>`}</div></section>`};
+  return`<div class="stack"><div class="head"><div><h2>Convocazioni</h2><p class="sub">Recap delle convocazioni della settimana e PDF da condividere.</p></div>
+    <button class="btn primary" type="button" data-a="pdfconv" ${wm.length?"":"disabled"}>Esporta convocazioni</button></div>
+    <div class="weeknav"><button class="iconbtn" type="button" data-a="cvweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">Weekend ${esc(fmtShort(iso(addDays(mon,5))))} – ${esc(fmtShort(iso(addDays(mon,6))))}</span><button class="iconbtn" type="button" data-a="cvweek" data-v="1" aria-label="Settimana successiva">›</button></div>
+    ${all.length?`<div class="panel"><b class="num">${all.length}</b> ${all.length===1?"partita":"partite"} · <b class="num">${tot}</b> giocatori convocati${dbl?` · <b class="num">${dbl}</b> in doppia (×2)`:""}</div>${all.map(card).join("")}`:`<div class="panel"><h3>Nessuna partita in questa settimana</h3><p style="margin:0">Crea la partita nella sezione Partite, poi scegli i convocati dal Recap settimana.</p></div>`}</div>`}
 function matchesView(){
   const all=Object.entries(S.matches).map(([id,m])=>Object.assign({id},m));const t=todayIso;
   const byTime=(x,y)=>(x.ora||"99:99").localeCompare(y.ora||"99:99");
@@ -565,7 +579,7 @@ function matchesView(){
     return`<h3 class="dayh">${title}</h3>`+ds.map(d=>`<div class="dayg"><div class="dayl">${esc(d?fmtDay(d):"Senza data")}</div>${arr.filter(m=>(m.data||"")===d).sort(byTime).map(matchCard).join("")}</div>`).join("")};
   const next=all.filter(m=>(m.data||"")>=t),past=all.filter(m=>(m.data||"")<t);
   return`<div class="stack"><div class="head"><div><h2>Partite</h2><p class="sub">Convocati, risultato e minuti giocati di ogni partita del fine settimana.</p></div>
-    <div class="row"><button class="btn" type="button" data-a="pdfall" ${next.length?"":"disabled"}>PDF convocazioni</button><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div></div>
+    <div class="row"><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div></div>
     ${!roster().length?noPlayers():all.length?sect(next.length&&past.length?"Prossime":"",next,false).replace('<h3 class="dayh"></h3>',"")+sect(next.length?"Giocate":"",past,true).replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>Nessuna partita registrata</h3><p style="margin:0">Dopo la partita del fine settimana premi <b>Nuova partita</b>: segna i convocati e i minuti. Le statistiche compaiono nella scheda di ogni giocatore.</p></div>`}</div>`;
 }
 function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",luogo:"",dirigente:"",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
@@ -785,10 +799,11 @@ document.addEventListener("click",async e=>{
     if(ok){S.dirty=false;S.draft=null;render()}break}
   case"deltr":if(el.dataset.c!=="1"){el.dataset.c="1";el.textContent="Conferma eliminazione";return}
     if(await write(db=>db.doc("trainings/"+S.trDate).delete(),"Allenamento eliminato")){S.draft=null;S.dirty=false;render()}break;
+  case"cvweek":S.convWeek=addDays(S.convWeek,7*v);render();break;
+  case"gomatch":{S.tab="partite";S.detOpen=false;const m=S.matches[v];S.matchEdit=JSON.parse(JSON.stringify(Object.assign({id:v,durata:45,giocatori:{}},m)));window.scrollTo(0,0);render();break}
+  case"pdfconv":await exportPdf(weekMatches(S.convWeek),"Convocazioni · weekend "+fmtShort(iso(addDays(S.convWeek,5)))+" – "+fmtShort(iso(addDays(S.convWeek,6))),"convocazioni-"+iso(S.convWeek)+".pdf");break;
   case"rcweek":S.recapWeek=addDays(S.recapWeek,7*v);render();break;
   case"copyconv":{const m=S.matchEdit;if(!m)break;if(!Object.keys(m.giocatori||{}).length){toast("Nessun convocato da copiare");break}const txt=convText(m);try{await navigator.clipboard.writeText(txt);toast("Convocati copiati: incollali nel gruppo")}catch(x){showCopyFallback(txt)}break}
-  case"pdfweek":await exportPdf(weekMatches(S.recapWeek),"Convocazioni · "+weekLabel(S.recapWeek),"convocazioni-"+iso(S.recapWeek)+".pdf");break;
-  case"pdfall":{const a=Object.entries(S.matches).map(([id,m])=>Object.assign({id},m)).filter(m=>(m.data||"")>=todayIso).sort((x,y)=>((x.data||"")+(x.ora||"99")).localeCompare((y.data||"")+(y.ora||"99")));await exportPdf(a,"Convocazioni · prossime partite","convocazioni-prossime.pdf");break}
   case"copyrecap":{const txt=recapText();try{await navigator.clipboard.writeText(txt);toast("Recap copiato: incollalo nel gruppo")}catch(x){showCopyFallback(txt)}break}
   case"detopen":S.detOpen=!S.detOpen;render();break;
   case"setf":{const m=S.matchEdit;if(m){m[el.dataset.k]=v;render()}break}
