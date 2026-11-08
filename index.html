@@ -14,8 +14,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
 <style>
+@font-face{font-family:"Big Shoulders Display";font-weight:800;font-style:normal;font-display:swap;src:url(fonts/big-shoulders-display-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Big Shoulders Display";font-weight:600;font-style:normal;font-display:swap;src:url(fonts/big-shoulders-display-latin-600-normal.woff2) format("woff2")}
+
 /* Colori sociali giallo e blu. Layout: registro da campo — barra squadra fissa in alto, schede a tab, righe-giocatore compatte pensate per il telefono a bordo campo */
 :root{
   --bg:#f1f3fa; --surface:#ffffff; --surface-2:#e6eaf6; --line:#d3d9ec;
@@ -565,7 +568,7 @@ function matchesView(){
     <div class="row"><button class="btn" type="button" data-a="pdfall" ${next.length?"":"disabled"}>PDF convocazioni</button><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div></div>
     ${!roster().length?noPlayers():all.length?sect(next.length&&past.length?"Prossime":"",next,false).replace('<h3 class="dayh"></h3>',"")+sect(next.length?"Giocate":"",past,true).replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>Nessuna partita registrata</h3><p style="margin:0">Dopo la partita del fine settimana premi <b>Nuova partita</b>: segna i convocati e i minuti. Le statistiche compaiono nella scheda di ogni giocatore.</p></div>`}</div>`;
 }
-function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",luogo:"",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
+function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",luogo:"",dirigente:"",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
 function gkFirst(l){return l.filter(p=>isGk(p.id)).concat(l.filter(p=>!isGk(p.id)))}
 function convText(m){
   const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
@@ -580,60 +583,81 @@ const minusMin=(t,n)=>{const[h,m]=String(t).split(":").map(Number);if(isNaN(h)||
 async function shareBlob(blob,name,type){const f=new File([blob],name,{type});
   try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==="AbortError")return}
   const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("File scaricato")}
+const dMon=d=>{if(!d)return"";const x=new Date(d+"T12:00:00");return["DOM","LUN","MAR","MER","GIO","VEN","SAB"][x.getDay()]+" "+String(x.getDate()).padStart(2,"0")+"/"+String(x.getMonth()+1).padStart(2,"0")};
+async function posterCanvas(m){
+  try{await document.fonts.load('800 100px "Big Shoulders Display"')}catch(e){}
+  const W=1080,H=1620,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+  const F='"Big Shoulders Display","Arial Narrow",Impact,sans-serif';const Y="#ffe500",NV="#12195c";
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,"#1c3ea8");g.addColorStop(.45,"#0e2272");g.addColorStop(.75,"#0a1a4a");g.addColorStop(1,"#0b3a24");x.fillStyle=g;x.fillRect(0,0,W,H);
+  const poly=(pts,col)=>{x.fillStyle=col;x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.fill()};
+  poly([[0,0],[330,0],[0,300]],Y);poly([[330,0],[420,0],[0,420],[0,300]],"rgba(255,229,0,.25)");poly([[W,0],[W-260,0],[W,260]],"#fff");poly([[W-260,0],[W-340,0],[W,340],[W,260]],"rgba(255,229,0,.3)");
+  poly([[0,H],[0,H-230],[330,H]],Y);poly([[W,H],[W,H-300],[W-420,H]],Y);poly([[W-420,H],[W-560,H],[W,H-420],[W,H-300]],"rgba(255,229,0,.28)");
+  x.textAlign="center";x.textBaseline="alphabetic";
+  const sh=(f)=>{x.save();x.shadowColor="rgba(0,0,0,.55)";x.shadowOffsetY=6;x.shadowBlur=10;f();x.restore()};
+  sh(()=>{x.fillStyle=Y;x.font="italic 800 124px "+F;x.fillText("CONVOCAZIONE",W/2,118)});
+  x.fillStyle="#fff";x.font="800 70px "+F;x.fillText("CATEGORIA",W/2,208);
+  sh(()=>{x.fillStyle=Y;x.font="800 160px "+F;x.fillText("UNDER 9",W/2,360)});
+  const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="icons/icon-512.png"});
+  if(img){x.save();x.beginPath();x.roundRect(40,160,215,215,38);x.clip();x.drawImage(img,40,160,215,215);x.restore()}
+  const opp=(m.avversario||"AVVERSARIO").toUpperCase();
+  const ini=opp.split(/\s+/).filter(w=>w.length>1).slice(0,2).map(w=>w[0]).join("")||opp[0];
+  x.save();x.translate(825,160);x.scale(.86,.86);x.beginPath();x.moveTo(0,0);x.lineTo(250,0);x.lineTo(250,150);x.quadraticCurveTo(250,250,125,290);x.quadraticCurveTo(0,250,0,150);x.closePath();x.fillStyle="#fff";x.fill();x.lineWidth=10;x.strokeStyle="#b01c2e";x.stroke();x.fillStyle="#b01c2e";x.font="800 120px "+F;x.fillText(ini,125,150);x.restore();
+  const bn=(pts,col)=>poly(pts,col);
+  bn([[40,455],[500,455],[470,555],[20,555]],Y);bn([[580,455],[1060,455],[1040,555],[610,555]],"#a1161f");
+  x.fillStyle=NV;x.font="800 100px "+F;x.fillText("DFA",250,537);
+  x.save();x.font="800 italic 92px "+F;let fs=100;const fit=(t,w)=>{fs=100;do{x.font="800 "+fs+"px "+F;fs-=3}while(x.measureText(t).width>w&&fs>30)};
+  fit(opp,400);x.fillStyle=Y;x.fillText(opp,830,537);x.restore();
+  x.save();x.fillStyle="#fff";x.font="italic 800 90px "+F;x.shadowColor="rgba(0,0,0,.6)";x.shadowBlur=8;x.fillText("VS",540,537);x.restore();
+  const col=[{x:70,w:240},{x:340,w:250},{x:610,w:280},{x:900,w:170}];
+  x.strokeStyle="rgba(255,255,255,.35)";x.lineWidth=2;[300,560,850].forEach(px=>{x.beginPath();x.moveTo(px,595);x.lineTo(px,720);x.stroke()});
+  const lab=(t,xx,yy,sz)=>{x.textAlign="left";x.fillStyle=Y;x.font="800 "+sz+"px "+F;x.fillText(t,xx,yy)};
+  const val=(t,xx,yy,sz)=>{x.textAlign="left";x.fillStyle="#fff";x.font="800 "+sz+"px "+F;x.fillText(t,xx,yy)};
+  // icone
+  x.strokeStyle="#fff";x.lineWidth=5;x.strokeRect(36,630,50,50);x.beginPath();x.moveTo(36,645);x.lineTo(86,645);x.stroke();x.fillStyle="#fff";[0,1,2,3].forEach(i=>[0,1,2].forEach(j=>x.fillRect(42+i*10.5,652+j*9,6,5)));
+  lab("DATA",100,650,32);val(dMon(m.data)||"DATA",100,704,50);
+  x.beginPath();x.arc(344,660,32,0,7);x.stroke();x.beginPath();x.moveTo(344,640);x.lineTo(344,660);x.lineTo(358,668);x.stroke();
+  lab("ORARIO",388,630,26);lab("PARTITA",388,654,26);val((m.ora||"--:--").replace(":","."),388,706,58);
+  x.fillStyle="#fff";x.beginPath();x.arc(598,650,20,0,7);x.fill();x.beginPath();x.moveTo(580,662);x.lineTo(616,662);x.lineTo(598,696);x.closePath();x.fill();x.fillStyle="#0e2272";x.beginPath();x.arc(598,650,7,0,7);x.fill();
+  const lg=(m.luogo||"Luogo da definire").split(",");const l1=lg[0].trim(),l2=lg.slice(1).join(",").trim();
+  x.textAlign="left";lab("LUOGO",632,624,24);x.fillStyle="#fff";x.font="800 34px "+F;
+  const wr=(t,wd)=>{const w=t.split(" ");const ls=[];let cur="";w.forEach(k=>{if(x.measureText(cur+" "+k).width>wd&&cur){ls.push(cur);cur=k}else cur=(cur?cur+" ":"")+k});if(cur)ls.push(cur);return ls};
+  const n1=wr(l1,205).slice(0,2);n1.forEach((ln,i)=>x.fillText(ln,632,656+i*34));
+  x.font="600 20px "+F;wr(l2,214).slice(0,2).forEach((ln,i)=>x.fillText(ln,632,656+(n1.length-1)*34+26+i*22));
+  x.fillStyle="#fff";x.beginPath();x.arc(880,640,11,0,7);x.arc(908,640,11,0,7);x.fill();x.beginPath();x.arc(894,632,13,0,7);x.fill();x.fillRect(868,650,52,15);
+  lab("ORARIO",934,630,22);lab("CONVOCAZ.",934,654,22);
+  val((m.ora?minusMin(m.ora,45):"--:--").replace(":","."),868,706,58);
+  // pannello elenco
+  const py=765;x.fillStyle=Y;x.beginPath();x.roundRect(46,py,988,575,28);x.fill();
+  x.textAlign="center";x.fillStyle=NV;x.font="800 62px "+F;x.fillText("ELENCO ATLETI CONVOCATI",W/2,py+68);
+  x.fillStyle="#e8f4ff";x.beginPath();x.roundRect(60,py+92,960,470,18);x.fill();
+  x.strokeStyle="#9ccfe8";x.lineWidth=3;x.beginPath();x.moveTo(540,py+104);x.lineTo(540,py+552);x.stroke();
+  const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
+  const per=Math.max(8,Math.ceil(l.length/2));const rh=Math.min(57,Math.floor(450/per));
+  for(let i=0;i<per*2;i++){const cc=i<per?0:1,r=i%per;const bx=74+cc*480,by=py+104+r*rh;
+    x.fillStyle=Y;x.beginPath();x.roundRect(bx,by+3,54,rh-8,4);x.fill();
+    x.strokeStyle="#a8d8ee";x.lineWidth=2;x.beginPath();x.moveTo(bx+60,by+rh-3);x.lineTo(bx+420,by+rh-3);x.stroke();
+    const p=l[i];if(!p)continue;x.fillStyle=NV;x.textAlign="center";x.font="800 "+Math.round(rh*.62)+"px "+F;x.fillText(String(i+1),bx+27,by+rh*.72);
+    x.textAlign="left";x.font="800 "+Math.round(rh*.72)+"px "+F;let nm=fullName(p).toUpperCase();while(x.measureText(nm).width>340&&nm.length>4)nm=nm.slice(0,-1);x.fillText(nm,bx+76,by+rh*.74)}
+  // staff
+  const sy=1400;x.strokeStyle="rgba(255,255,255,.35)";x.lineWidth=2;x.beginPath();x.moveTo(540,sy-30);x.lineTo(540,sy+60);x.stroke();
+  const person=(px,tie)=>{x.fillStyle="#fff";x.beginPath();x.arc(px,sy-4,20,0,7);x.fill();x.beginPath();x.roundRect(px-34,sy+22,68,46,16);x.fill();if(tie){x.fillStyle="#0e2272";x.beginPath();x.moveTo(px-6,sy+24);x.lineTo(px+6,sy+24);x.lineTo(px+4,sy+60);x.lineTo(px,sy+66);x.lineTo(px-4,sy+60);x.closePath();x.fill()}};
+  person(110,false);person(610,true);
+  x.textAlign="left";lab("ALLENATORE:",180,sy+10,32);val((m.mister||"-").toUpperCase(),180,sy+62,54);
+  lab("DIRIGENTE:",670,sy+10,32);val((m.dirigente||"-").toUpperCase(),670,sy+62,54);
+  x.save();x.translate(W/2,1557);x.rotate(-.07);x.textAlign="center";x.fillStyle=Y;x.shadowColor="rgba(0,0,0,.7)";x.shadowBlur=12;x.shadowOffsetY=6;x.font="italic 800 82px "+F;x.fillText("RICERCA",0,-12);x.fillText("L'ECCELLENZA",0,52);x.restore();
+  x.textAlign="right";x.fillStyle=Y;x.font="italic 800 32px "+F;["PASSIONE","DISCIPLINA","CRESCITA"].forEach((t,i)=>x.fillText(t,W-34,1530+i*34));
+  return c}
 async function exportPdf(list,titolo,fname){
   const ms=list.filter(m=>m.giocatori&&Object.keys(m.giocatori).length);
   if(!ms.length){toast("Nessuna convocazione da esportare");return}
   let lib;try{lib=await loadPdf()}catch(e){toast("Impossibile creare il PDF (connessione?)");return}
-  const logo=await new Promise(r=>{const i=new Image();i.onload=()=>{try{const c=document.createElement("canvas");c.width=c.height=192;c.getContext("2d").drawImage(i,0,0,192,192);r(c.toDataURL("image/png"))}catch(e){r(null)}};i.onerror=()=>r(null);i.src="icons/icon-192.png"});
-  const doc=new lib.jsPDF({unit:"pt",format:"a4"});const W=595,H=842,M=40;
-  const head=first=>{doc.setFillColor(29,60,150);doc.rect(0,0,W,first?96:52,"F");doc.setFillColor(255,216,0);doc.rect(0,first?96:52,W,4,"F");
-    if(logo)doc.addImage(logo,"PNG",M,first?14:8,first?68:36,first?68:36);
-    const tx=M+(first?84:48);doc.setTextColor(255,216,0);doc.setFont("helvetica","bold");doc.setFontSize(first?24:15);doc.text("DF ACADEMY 2018",tx,first?44:34);
-    if(first){doc.setTextColor(255,255,255);doc.setFont("helvetica","normal");doc.setFontSize(13);doc.text(titolo,tx,66)}
-    return first?122:76};
-  let y=head(true);
-  const need=n=>{if(y+n>H-50){doc.addPage();y=head(false)}};
-  ms.forEach(m=>{
-    const l=gkFirst(roster().filter(p=>m.giocatori[p.id]));const rows=Math.ceil(l.length/2);const h=150+rows*19;need(Math.min(h,H-130));
-    doc.setDrawColor(200,205,225);doc.setFillColor(244,246,252);doc.roundedRect(M,y,W-2*M,34,6,6,"FD");
-    let d="";if(m.data){const x=new Date(m.data+"T12:00:00");d=x.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});d=d.charAt(0).toUpperCase()+d.slice(1)}
-    doc.setTextColor(29,60,150);doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text(d||"Data da definire",M+12,y+22);y+=54;
-    doc.setTextColor(20,24,50);doc.setFontSize(17);doc.text("vs "+(m.avversario||"da definire")+"  ·  "+(m.campo==="trasferta"?"Trasferta":"Casa"),M,y);y+=24;
-    const info=[["Orario partita",m.ora||"da definire"],["Ritrovo",m.ora?minusMin(m.ora,45)+"  (45 minuti prima)":"da definire"],["Luogo",m.luogo||"da definire"],["Mister",m.mister||"-"]];
-    doc.setFontSize(11);info.forEach(([k,v])=>{need(18);doc.setFont("helvetica","bold");doc.setTextColor(90,98,130);doc.text(k+":",M,y);doc.setFont("helvetica","normal");doc.setTextColor(20,24,50);doc.text(String(v),M+100,y,{maxWidth:W-2*M-100});y+=17});
-    y+=8;need(40);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(29,110,70);doc.text("CONVOCATI ("+l.length+")",M,y);y+=8;doc.setDrawColor(29,110,70);doc.line(M,y,W-M,y);y+=17;
-    doc.setFontSize(12);const col=(W-2*M)/2;
-    for(let r=0;r<rows;r++){need(19);[0,1].forEach(c=>{const i=r+c*rows;const p=l[i];if(!p)return;doc.setFont("helvetica","normal");doc.setTextColor(20,24,50);doc.text((i+1)+".",M+c*col,y);doc.setFont("helvetica","bold");doc.text(fullName(p)+(isGk(p.id)?"  (P)":""),M+22+c*col,y)});y+=19}
-    y+=26});
-  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(130,135,160);doc.text("DF Academy 2018 · convocazioni · pagina "+i+" di "+n,W/2,H-24,{align:"center"})}
+  toast("Creo il PDF…");
+  const doc=new lib.jsPDF({unit:"pt",format:[540,810],orientation:"portrait",compress:true});
+  for(let i=0;i<ms.length;i++){const cv=await posterCanvas(ms[i]);if(i)doc.addPage([540,810],"portrait");doc.addImage(cv.toDataURL("image/jpeg",.9),"JPEG",0,0,540,810)}
   await shareBlob(doc.output("blob"),fname,"application/pdf")}
 async function exportImg(m){
-  const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
-  const W=1080,H=Math.max(1350,640+l.length*86+110);const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
-  const g=x.createLinearGradient(0,0,W*.6,H);g.addColorStop(0,"#1d3a99");g.addColorStop(.7,"#0d1230");x.fillStyle=g;x.fillRect(0,0,W,H);
-  x.fillStyle="#ffd800";x.fillRect(0,0,W,18);
-  const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="icons/icon-512.png"});
-  if(img){x.save();x.beginPath();x.roundRect(80,88,170,170,28);x.clip();x.drawImage(img,80,88,170,170);x.restore()}
-  const F="Arial,Helvetica,sans-serif";x.textBaseline="alphabetic";
-  x.fillStyle="#ffd800";x.font="900 64px "+F;x.fillText("DF ACADEMY",280,175);
-  x.fillStyle="rgba(255,255,255,.8)";x.font="34px "+F;x.fillText("Annata 2018 · Convocati",280,225);
-  x.fillStyle="rgba(255,255,255,.08)";x.beginPath();x.roundRect(80,302,920,199,24);x.fill();
-  x.fillStyle="#fff";x.font="800 52px "+F;x.fillText("vs "+(m.avversario||"—"),110,375);
-  let d="";if(m.data){const dt=new Date(m.data+"T12:00:00");d=dt.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});d=d.charAt(0).toUpperCase()+d.slice(1)}
-  x.fillStyle="rgba(255,255,255,.85)";x.font="34px "+F;x.fillText((d+(m.ora?" · ore "+m.ora:"")+" · "+(m.campo==="trasferta"?"trasferta":"casa")).trim(),110,426);
-  if(m.mister){x.fillStyle="rgba(255,255,255,.7)";x.font="30px "+F;x.fillText("Mister "+m.mister,110,470)}
-  x.fillStyle="#6fd9a0";x.font="700 30px "+F;x.fillText("CONVOCATI ("+l.length+")",80,565);
-  l.forEach((p,i)=>{const y=582+i*86,cy=y+43;
-    x.fillStyle="#ffd800";x.beginPath();x.arc(111,cy,31,0,7);x.fill();
-    x.fillStyle="#0d1230";x.font="700 32px "+F;x.textAlign="center";x.fillText(String(i+1),111,cy+11);x.textAlign="left";
-    x.fillStyle="#fff";x.font="700 46px "+F;const nm=fullName(p);x.fillText(nm,168,cy+16);
-    if(isGk(p.id)){const w=x.measureText(nm).width;x.font="40px "+F;x.fillText("🧤",168+w+14,cy+14)}
-    x.fillStyle="rgba(255,255,255,.12)";x.fillRect(80,y+85,920,2)});
-  x.fillStyle="rgba(255,255,255,.55)";x.font="26px "+F;x.textAlign="center";x.fillText("DF Academy 2018 · registro presenze",W/2,H-40);
-  const blob=await new Promise(r=>c.toBlob(r,"image/png"));if(!blob){toast("Impossibile creare l'immagine");return}
-  const f=new File([blob],"convocati-"+(m.data||"partita")+".png",{type:"image/png"});
-  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==="AbortError")return}
-  const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("Immagine scaricata")}
+  const cv=await posterCanvas(m);const blob=await new Promise(r=>cv.toBlob(r,"image/png"));if(!blob){toast("Impossibile creare l'immagine");return}
+  await shareBlob(blob,"convocati-"+(m.data||"partita")+".png","image/png")}
 function matchForm(){
   const m=S.matchEdit;const ps=roster();const mon=matchWeek(m.data||todayIso);
   const conv=gkFirst(ps.filter(p=>m.giocatori[p.id]));
@@ -646,6 +670,7 @@ function matchForm(){
     <div class="panel stack" style="gap:14px">
       <div class="field" style="margin:0"><label for="m_avv">Avversario</label><input id="m_avv" data-f="avversario" value="${esc(m.avversario)}" placeholder="Es. ASD Roma Nord" style="font-size:20px;font-weight:700"></div>
       <div class="seg" role="group" aria-label="Campo" style="display:flex;width:100%"><button type="button" class="p" data-a="setf" data-k="campo" data-v="casa" aria-pressed="${m.campo!=="trasferta"}" style="flex:1">🏠 Casa</button><button type="button" class="a" data-a="setf" data-k="campo" data-v="trasferta" aria-pressed="${m.campo==="trasferta"}" style="flex:1">🚌 Trasferta</button></div>
+      <div class="field" style="margin:0"><label for="m_dir">Dirigente</label><input id="m_dir" data-f="dirigente" value="${esc(m.dirigente||"")}" placeholder="Es. Scarnicci"></div>
       <div class="field" style="margin:0"><label for="m_luogo">📍 Luogo della partita</label><input id="m_luogo" data-f="luogo" value="${esc(m.luogo||"")}" placeholder="Es. Campo Sportivo Tor Tre Teste, Via…"></div>
       <div class="grid2">
         <div class="field" style="margin:0"><label for="m_data">📅 Data</label><input id="m_data" type="date" data-f="data" value="${esc(m.data)}"></div>
@@ -780,7 +805,7 @@ document.addEventListener("click",async e=>{
   case"rcconv":toggleConv(v,el.dataset.m);break
   case"savematch":{const m=S.matchEdit;if(!m.data){toast("Inserisci la data della partita");return}
     const gi={};Object.entries(m.giocatori).forEach(([pid,g])=>{if(S.players[pid])gi[pid]={min:g.assente?0:Math.max(0,+g.min||0),assente:!!g.assente,gol:g.assente?0:Math.max(0,+g.gol||0)}});
-    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,luogo:(m.luogo||"").trim(),golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
+    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,luogo:(m.luogo||"").trim(),dirigente:(m.dirigente||"").trim(),golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
     const ok=await write(db=>(m.id?db.doc("matches/"+m.id):db.collection("matches").doc()).set(body),"Partita salvata");if(ok){S.matchEdit=null;S.pending=false;render()}break}
   case"delmatch":if(el.dataset.c!=="1"){el.dataset.c="1";el.textContent="Conferma eliminazione";return}
     if(await write(db=>db.doc("matches/"+S.matchEdit.id).delete(),"Partita eliminata")){S.matchEdit=null;render()}break;
