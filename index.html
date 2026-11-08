@@ -321,6 +321,7 @@ body.is-login::before{background:transparent}
 .gname i{font-style:normal;opacity:.6;margin-left:6px;font-size:12px}
 .gnone{color:var(--muted);font-size:13px}
 .ghd{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px;font-size:15px;text-transform:uppercase;letter-spacing:.04em}.ghd small{font-size:12px;opacity:.7;text-transform:none;letter-spacing:0}.ghd.own{color:var(--yellow,#ffe600)}
+.un{font-size:11px;font-weight:700;color:var(--muted,#6b7280);margin:0 6px 0 3px;align-self:center}.un.g{margin-right:0}
 </style>
 
 </head>
@@ -430,7 +431,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 16 · 8 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 17 · 8 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -677,7 +678,7 @@ function matchForm(){
   const conv=gkFirst(ps.filter(p=>m.giocatori[p.id]));
   const rowOf=p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);const ok=g&&!g.assente;return`<tr class="on"><td><label><b>${esc(fullName(p))}</b>${isGk(p.id)?" 🧤":""}</label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span></td>
       <td><div class="seg" role="group" aria-label="Presenza ${esc(fullName(p))}"><button type="button" class="p" data-a="mpres" data-v="${p.id}" aria-pressed="${!g.assente}">Presente</button><button type="button" class="a" data-a="mabs" data-v="${p.id}" aria-pressed="${!!g.assente}">Assente</button></div></td>
-      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${ok?esc(g.min):""}" ${ok?"":"disabled"} placeholder="Min" aria-label="Minuti ${esc(fullName(p))}"><input class="mini num gol" type="number" min="0" max="50" inputmode="numeric" data-pg="${p.id}" value="${ok&&+g.gol?esc(g.gol):""}" ${ok?"":"disabled"} placeholder="Gol" aria-label="Gol ${esc(fullName(p))}"></div></td></tr>`};
+      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${ok?esc(g.min):""}" ${ok?"":"disabled"} placeholder="Min" aria-label="Minuti ${esc(fullName(p))}"><span class="un">min</span><input class="mini num gol" type="number" min="0" max="50" inputmode="numeric" data-pg="${p.id}" value="${ok&&+g.gol?esc(g.gol):""}" ${ok?"":"disabled"} placeholder="Gol" aria-label="Gol ${esc(fullName(p))}"><span class="un g">⚽</span></div></td></tr>`};
 
   return`<div class="stack"><div class="head"><div><h2>${m.id?"Modifica partita":"Nuova partita"}</h2><p class="sub">Spunta i convocati, poi inserisci i minuti. Accanto a ogni nome trovi lo stato della settimana ${weekLabel(mon)}.</p></div>
     <button class="btn" type="button" data-a="closematch">Torna all'elenco</button></div>
