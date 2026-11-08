@@ -375,7 +375,7 @@ function roster(){return Object.entries(S.players).map(([id,p])=>Object.assign({
 const fullName=p=>((p.cognome||"")+" "+(p.nome||"")).trim()||"Senza nome";
 function presentAt(pid,date){const t=S.trainings[date];if(!t)return null;return !(t.assenti&&t.assenti[pid])}
 function weekInfo(pid,mon){const ds=weekDays(mon);const marks=ds.map(d=>presentAt(pid,d));const count=marks.filter(x=>x===true).length;const reg=ds.filter(d=>S.trainings[d]).length;
-  const gk=isGk(pid);const st=count>=3?"doppia":(count===2||(gk&&count===1))?"conv":"non";return{marks,count,reg,st,gk}}
+  const gk=isGk(pid);const st=(count>=3||(gk&&count>=1))?"doppia":count===2?"conv":"non";return{marks,count,reg,st,gk}}
 function isGk(pid){const p=S.players&&S.players[pid];return!!p&&(p.ruolo||"")==="Portiere"}
 const ST={doppia:{l:"Convocabile 3/3 · doppia",c:"b-doppia",g:"Candidati doppia"},conv:{l:"Convocabile",c:"b-conv",g:"Convocabili"},non:{l:"Non convocabile",c:"b-non",g:"Non convocabili"}};
 function playerStats(pid,from,to){
@@ -427,7 +427,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 15 · 6 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 16 · 6 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -538,8 +538,8 @@ function recapView(){
   const g=recapGroups(S.recapWeek);const wm=weekMatches(S.recapWeek);
   const grp=k=>`<section class="group g-${k}"><header><b>${ST[k].g}</b><span class="count num">${g[k].length}</span></header>
     ${g[k].length?g[k].map(({p,w})=>`<div class="grow-row"><div class="pname">${p.numero?`<span class="num" style="color:var(--muted)">${esc(p.numero)} · </span>`:""}${esc(fullName(p))}${w.gk?` <small style="color:var(--muted)">· portiere</small>`:""}${convUi(p.id,wm)}</div>${ticks(w.marks)}</div>`).join(""):`<div class="empty">Nessuno</div>`}</section>`;
-  return`<div class="stack"><div class="head"><div><h2>Recap settimana</h2><p class="sub">Sotto 2 presenze non convocabile · 2 su 3 convocabile · 3 su 3 candidato alla doppia. Portieri convocabili già con 1 su 3.</p></div>
-    <button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div>
+  return`<div class="stack"><div class="head"><div><h2>Recap settimana</h2><p class="sub">Sotto 2 presenze non convocabile · 2 su 3 convocabile · 3 su 3 candidato alla doppia. Per i portieri basta 1 presenza su 3, anche per la doppia.</p></div>
+    <div class="row"><button class="btn" type="button" data-a="pdfweek" ${wm.length?"":"disabled"}>Esporta PDF</button><button class="btn primary" type="button" data-a="copyrecap" ${ps.length?"":"disabled"}>Copia per WhatsApp</button></div></div>
     <div class="weeknav"><button class="iconbtn" type="button" data-a="rcweek" data-v="-1" aria-label="Settimana precedente">‹</button><span class="lbl">${weekLabel(S.recapWeek)}</span><button class="iconbtn" type="button" data-a="rcweek" data-v="1" aria-label="Settimana successiva">›</button></div>
     ${reg<3?`<div class="note warn">Allenamenti registrati: ${reg} su 3. Recap provvisorio${missing.length?" — mancano "+missing.join(", "):""}.</div>`:`<div class="note">Tutti e 3 gli allenamenti della settimana sono registrati.</div>`}
     ${wm.length?`<div class="note">${wm.map(m=>`<div><b>${esc(fmtDay(m.data))}${m.ora?" · "+esc(m.ora):""}</b> ${esc(m.avversario||"partita")} · ${Object.keys(m.giocatori||{}).length?Object.keys(m.giocatori).length+" convocati":"convocati da inserire"}</div>`).join("")}</div>`:""}
@@ -562,10 +562,10 @@ function matchesView(){
     return`<h3 class="dayh">${title}</h3>`+ds.map(d=>`<div class="dayg"><div class="dayl">${esc(d?fmtDay(d):"Senza data")}</div>${arr.filter(m=>(m.data||"")===d).sort(byTime).map(matchCard).join("")}</div>`).join("")};
   const next=all.filter(m=>(m.data||"")>=t),past=all.filter(m=>(m.data||"")<t);
   return`<div class="stack"><div class="head"><div><h2>Partite</h2><p class="sub">Convocati, risultato e minuti giocati di ogni partita del fine settimana.</p></div>
-    <button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div>
+    <div class="row"><button class="btn" type="button" data-a="pdfall" ${next.length?"":"disabled"}>PDF convocazioni</button><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div></div>
     ${!roster().length?noPlayers():all.length?sect(next.length&&past.length?"Prossime":"",next,false).replace('<h3 class="dayh"></h3>',"")+sect(next.length?"Giocate":"",past,true).replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>Nessuna partita registrata</h3><p style="margin:0">Dopo la partita del fine settimana premi <b>Nuova partita</b>: segna i convocati e i minuti. Le statistiche compaiono nella scheda di ogni giocatore.</p></div>`}</div>`;
 }
-function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
+function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",luogo:"",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
 function gkFirst(l){return l.filter(p=>isGk(p.id)).concat(l.filter(p=>!isGk(p.id)))}
 function convText(m){
   const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
@@ -575,6 +575,38 @@ function convText(m){
   L.push("","Convocati ("+l.length+"):");
   l.forEach((p,i)=>L.push((i+1)+". "+fullName(p)+(isGk(p.id)?" 🧤":"")));
   return L.filter((x,i)=>x||i>2).join("\n")}
+let pdfLib;function loadPdf(){return pdfLib||(pdfLib=new Promise((res,rej)=>{if(window.jspdf)return res(window.jspdf);const s=document.createElement("script");s.src="jspdf.min.js";s.onload=()=>res(window.jspdf);s.onerror=()=>{pdfLib=null;rej(new Error("pdf"))};document.head.appendChild(s)}))}
+const minusMin=(t,n)=>{const[h,m]=String(t).split(":").map(Number);if(isNaN(h)||isNaN(m))return"";let x=h*60+m-n;if(x<0)x+=1440;return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0")};
+async function shareBlob(blob,name,type){const f=new File([blob],name,{type});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==="AbortError")return}
+  const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("File scaricato")}
+async function exportPdf(list,titolo,fname){
+  const ms=list.filter(m=>m.giocatori&&Object.keys(m.giocatori).length);
+  if(!ms.length){toast("Nessuna convocazione da esportare");return}
+  let lib;try{lib=await loadPdf()}catch(e){toast("Impossibile creare il PDF (connessione?)");return}
+  const logo=await new Promise(r=>{const i=new Image();i.onload=()=>{try{const c=document.createElement("canvas");c.width=c.height=192;c.getContext("2d").drawImage(i,0,0,192,192);r(c.toDataURL("image/png"))}catch(e){r(null)}};i.onerror=()=>r(null);i.src="icons/icon-192.png"});
+  const doc=new lib.jsPDF({unit:"pt",format:"a4"});const W=595,H=842,M=40;
+  const head=first=>{doc.setFillColor(29,60,150);doc.rect(0,0,W,first?96:52,"F");doc.setFillColor(255,216,0);doc.rect(0,first?96:52,W,4,"F");
+    if(logo)doc.addImage(logo,"PNG",M,first?14:8,first?68:36,first?68:36);
+    const tx=M+(first?84:48);doc.setTextColor(255,216,0);doc.setFont("helvetica","bold");doc.setFontSize(first?24:15);doc.text("DF ACADEMY 2018",tx,first?44:34);
+    if(first){doc.setTextColor(255,255,255);doc.setFont("helvetica","normal");doc.setFontSize(13);doc.text(titolo,tx,66)}
+    return first?122:76};
+  let y=head(true);
+  const need=n=>{if(y+n>H-50){doc.addPage();y=head(false)}};
+  ms.forEach(m=>{
+    const l=gkFirst(roster().filter(p=>m.giocatori[p.id]));const rows=Math.ceil(l.length/2);const h=150+rows*19;need(Math.min(h,H-130));
+    doc.setDrawColor(200,205,225);doc.setFillColor(244,246,252);doc.roundedRect(M,y,W-2*M,34,6,6,"FD");
+    let d="";if(m.data){const x=new Date(m.data+"T12:00:00");d=x.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});d=d.charAt(0).toUpperCase()+d.slice(1)}
+    doc.setTextColor(29,60,150);doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text(d||"Data da definire",M+12,y+22);y+=54;
+    doc.setTextColor(20,24,50);doc.setFontSize(17);doc.text("vs "+(m.avversario||"da definire")+"  ·  "+(m.campo==="trasferta"?"Trasferta":"Casa"),M,y);y+=24;
+    const info=[["Orario partita",m.ora||"da definire"],["Ritrovo",m.ora?minusMin(m.ora,45)+"  (45 minuti prima)":"da definire"],["Luogo",m.luogo||"da definire"],["Mister",m.mister||"-"]];
+    doc.setFontSize(11);info.forEach(([k,v])=>{need(18);doc.setFont("helvetica","bold");doc.setTextColor(90,98,130);doc.text(k+":",M,y);doc.setFont("helvetica","normal");doc.setTextColor(20,24,50);doc.text(String(v),M+100,y,{maxWidth:W-2*M-100});y+=17});
+    y+=8;need(40);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(29,110,70);doc.text("CONVOCATI ("+l.length+")",M,y);y+=8;doc.setDrawColor(29,110,70);doc.line(M,y,W-M,y);y+=17;
+    doc.setFontSize(12);const col=(W-2*M)/2;
+    for(let r=0;r<rows;r++){need(19);[0,1].forEach(c=>{const i=r+c*rows;const p=l[i];if(!p)return;doc.setFont("helvetica","normal");doc.setTextColor(20,24,50);doc.text((i+1)+".",M+c*col,y);doc.setFont("helvetica","bold");doc.text(fullName(p)+(isGk(p.id)?"  (P)":""),M+22+c*col,y)});y+=19}
+    y+=26});
+  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(130,135,160);doc.text("DF Academy 2018 · convocazioni · pagina "+i+" di "+n,W/2,H-24,{align:"center"})}
+  await shareBlob(doc.output("blob"),fname,"application/pdf")}
 async function exportImg(m){
   const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
   const W=1080,H=Math.max(1350,640+l.length*86+110);const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
@@ -614,6 +646,7 @@ function matchForm(){
     <div class="panel stack" style="gap:14px">
       <div class="field" style="margin:0"><label for="m_avv">Avversario</label><input id="m_avv" data-f="avversario" value="${esc(m.avversario)}" placeholder="Es. ASD Roma Nord" style="font-size:20px;font-weight:700"></div>
       <div class="seg" role="group" aria-label="Campo" style="display:flex;width:100%"><button type="button" class="p" data-a="setf" data-k="campo" data-v="casa" aria-pressed="${m.campo!=="trasferta"}" style="flex:1">🏠 Casa</button><button type="button" class="a" data-a="setf" data-k="campo" data-v="trasferta" aria-pressed="${m.campo==="trasferta"}" style="flex:1">🚌 Trasferta</button></div>
+      <div class="field" style="margin:0"><label for="m_luogo">📍 Luogo della partita</label><input id="m_luogo" data-f="luogo" value="${esc(m.luogo||"")}" placeholder="Es. Campo Sportivo Tor Tre Teste, Via…"></div>
       <div class="grid2">
         <div class="field" style="margin:0"><label for="m_data">📅 Data</label><input id="m_data" type="date" data-f="data" value="${esc(m.data)}"></div>
         <div class="field" style="margin:0"><label for="m_ora">🕙 Orario</label><input id="m_ora" type="time" data-f="ora" value="${esc(m.ora||"")}"></div>
@@ -729,6 +762,8 @@ document.addEventListener("click",async e=>{
     if(await write(db=>db.doc("trainings/"+S.trDate).delete(),"Allenamento eliminato")){S.draft=null;S.dirty=false;render()}break;
   case"rcweek":S.recapWeek=addDays(S.recapWeek,7*v);render();break;
   case"copyconv":{const m=S.matchEdit;if(!m)break;if(!Object.keys(m.giocatori||{}).length){toast("Nessun convocato da copiare");break}const txt=convText(m);try{await navigator.clipboard.writeText(txt);toast("Convocati copiati: incollali nel gruppo")}catch(x){showCopyFallback(txt)}break}
+  case"pdfweek":await exportPdf(weekMatches(S.recapWeek),"Convocazioni · "+weekLabel(S.recapWeek),"convocazioni-"+iso(S.recapWeek)+".pdf");break;
+  case"pdfall":{const a=Object.entries(S.matches).map(([id,m])=>Object.assign({id},m)).filter(m=>(m.data||"")>=todayIso).sort((x,y)=>((x.data||"")+(x.ora||"99")).localeCompare((y.data||"")+(y.ora||"99")));await exportPdf(a,"Convocazioni · prossime partite","convocazioni-prossime.pdf");break}
   case"copyrecap":{const txt=recapText();try{await navigator.clipboard.writeText(txt);toast("Recap copiato: incollalo nel gruppo")}catch(x){showCopyFallback(txt)}break}
   case"detopen":S.detOpen=!S.detOpen;render();break;
   case"setf":{const m=S.matchEdit;if(m){m[el.dataset.k]=v;render()}break}
@@ -745,7 +780,7 @@ document.addEventListener("click",async e=>{
   case"rcconv":toggleConv(v,el.dataset.m);break
   case"savematch":{const m=S.matchEdit;if(!m.data){toast("Inserisci la data della partita");return}
     const gi={};Object.entries(m.giocatori).forEach(([pid,g])=>{if(S.players[pid])gi[pid]={min:g.assente?0:Math.max(0,+g.min||0),assente:!!g.assente,gol:g.assente?0:Math.max(0,+g.gol||0)}});
-    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
+    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,luogo:(m.luogo||"").trim(),golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
     const ok=await write(db=>(m.id?db.doc("matches/"+m.id):db.collection("matches").doc()).set(body),"Partita salvata");if(ok){S.matchEdit=null;S.pending=false;render()}break}
   case"delmatch":if(el.dataset.c!=="1"){el.dataset.c="1";el.textContent="Conferma eliminazione";return}
     if(await write(db=>db.doc("matches/"+S.matchEdit.id).delete(),"Partita eliminata")){S.matchEdit=null;render()}break;
