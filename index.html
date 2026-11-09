@@ -427,7 +427,7 @@ function render(){
   if(!S.user){app.innerHTML=loginView();return}
   const u=S.me||{nome:""};
   const ICO={convocazioni:'<path d="M9 4.5h6M9 4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5M9 4.5H6.5A1.5 1.5 0 0 0 5 6v13.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H15m-6 8 2 2 4-4"/>',allenamenti:'<path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm4 10 2 2 4-4"/>',recap:'<path d="M5 20V10m7 10V4m7 16v-7"/>',partite:'<circle cx="12" cy="12" r="9"/><path d="m12 8 3.5 2.5-1.3 4h-4.4l-1.3-4Zm0-6v6m3.5 2.5L21 9.8M14.2 14.5l3.2 4.4M9.8 14.5l-3.200 4.4M8.500 10.500 3 9.800"/>',rosa:'<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.200A6.500 6.500 0 0 1 21.500 20"/>'};
-  const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["partite","Partite","Partite"],["convocazioni","Convocazioni","Convoc."],["rosa","Rosa e schede","Rosa"]];
+  const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["convocazioni","Convocazioni","Convoc."],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];
   const navHtml=c=>`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
@@ -561,7 +561,7 @@ function scorers(m){const l=Object.entries(m.giocatori||{}).filter(([id,g])=>S.p
 function matchCard(m){const n=Object.keys(m.giocatori||{}).length;const has=!(m.golFatti==null||m.golFatti==="")&&!(m.golSubiti==null||m.golSubiti==="");
   return`<button class="mcard" type="button" data-a="openmatch" data-v="${m.id}"><div class="mtime num">${esc(m.ora||"–:–")}</div>
     <div class="minfo"><b>${esc(m.avversario||"—")}</b><small>${m.campo==="trasferta"?"Trasferta":"Casa"}${m.mister?" · mister "+esc(m.mister):""}${n?" · "+n+" convocati":""}</small>${scorers(m)}</div>
-    <div class="mres">${has?`<span class="num">${esc(m.golFatti)}–${esc(m.golSubiti)}</span>`:n?`<span class="num" style="opacity:.45">–</span>`:`<span class="badge b-warn">da compilare</span>`}</div></button>`}
+    <div class="mres">${has?`<span class="num">${esc(m.golFatti)}–${esc(m.golSubiti)}</span>`:(m.data||"")<todayIso?`<span class="badge b-warn">da compilare</span>`:`<span class="num" style="opacity:.45">–</span>`}</div></button>`}
 function convView(){
   const mon=S.convWeek;const wm=weekMatches(mon).filter(m=>m.giocatori&&Object.keys(m.giocatori).length);const all=weekMatches(mon);
   const cnt={};wm.forEach(m=>Object.keys(m.giocatori).forEach(id=>{if(S.players[id])cnt[id]=(cnt[id]||0)+1}));
@@ -582,13 +582,13 @@ function matchesView(){
   const sect=(title,arr,desc)=>{if(!arr.length)return"";const ds=days(arr).sort();if(desc)ds.reverse();
     return`<h3 class="dayh">${title}</h3>`+ds.map(d=>`<div class="dayg"><div class="dayl">${esc(d?fmtDay(d):"Senza data")}</div>${arr.filter(m=>(m.data||"")===d).sort(byTime).map(matchCard).join("")}</div>`).join("")};
   const hasRes=m=>!(m.golFatti==null||m.golFatti==="")&&!(m.golSubiti==null||m.golSubiti==="");
-  const next=all.filter(m=>!hasRes(m)),past=all.filter(hasRes);
+  const isPast=m=>hasRes(m)||(m.data||"")<t;const next=all.filter(m=>!isPast(m)),past=all.filter(isPast);
   const tb=S.mTab||(next.length||!past.length?"next":"past");const arr=tb==="next"?next:past;
-  const empty=tb==="next"?"Nessuna partita da giocare o da compilare":"Nessuna partita giocata";
+  const empty=tb==="next"?"Nessuna partita in programma":"Nessuna partita giocata";
   return`<div class="stack"><div class="head"><div><h2>Partite</h2><p class="sub">Convocati, risultato, marcatori e minuti di ogni partita.</p></div>
     <div class="row"><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div></div>
-    ${!roster().length?noPlayers():`<div class="seg mtabs" role="tablist" style="display:flex;width:100%"><button type="button" role="tab" data-a="mtab" data-v="next" aria-selected="${tb==="next"}" aria-pressed="${tb==="next"}" class="mt">Da giocare (${next.length})</button><button type="button" role="tab" data-a="mtab" data-v="past" aria-selected="${tb==="past"}" aria-pressed="${tb==="past"}" class="mt">Giocate (${past.length})</button></div>
-    ${arr.length?sect("",arr,tb==="past").replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>${empty}</h3><p style="margin:0">${tb==="next"?"Premi <b>Nuova partita</b> per crearne una.":"Qui compariranno le partite con il risultato inserito."}</p></div>`}`}</div>`;
+    ${!roster().length?noPlayers():`<div class="seg mtabs" role="tablist" style="display:flex;width:100%"><button type="button" role="tab" data-a="mtab" data-v="next" aria-selected="${tb==="next"}" aria-pressed="${tb==="next"}" class="mt">Prossime (${next.length})</button><button type="button" role="tab" data-a="mtab" data-v="past" aria-selected="${tb==="past"}" aria-pressed="${tb==="past"}" class="mt">Giocate (${past.length})</button></div>
+    ${arr.length?sect("",arr,tb==="past").replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>${empty}</h3><p style="margin:0">${tb==="next"?"Premi <b>Nuova partita</b> per crearne una.":"Qui compariranno le partite già giocate."}</p></div>`}`}</div>`;
 }
 function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",luogo:"",dirigente:"",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
 function gkFirst(l){return l.filter(p=>isGk(p.id)).concat(l.filter(p=>!isGk(p.id)))}
