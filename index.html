@@ -581,13 +581,14 @@ function matchesView(){
   const days=arr=>[...new Set(arr.map(m=>m.data||""))];
   const sect=(title,arr,desc)=>{if(!arr.length)return"";const ds=days(arr).sort();if(desc)ds.reverse();
     return`<h3 class="dayh">${title}</h3>`+ds.map(d=>`<div class="dayg"><div class="dayl">${esc(d?fmtDay(d):"Senza data")}</div>${arr.filter(m=>(m.data||"")===d).sort(byTime).map(matchCard).join("")}</div>`).join("")};
-  const next=all.filter(m=>(m.data||"")>=t),past=all.filter(m=>(m.data||"")<t);
+  const hasRes=m=>!(m.golFatti==null||m.golFatti==="")&&!(m.golSubiti==null||m.golSubiti==="");
+  const next=all.filter(m=>!hasRes(m)),past=all.filter(hasRes);
   const tb=S.mTab||(next.length||!past.length?"next":"past");const arr=tb==="next"?next:past;
-  const empty=tb==="next"?"Nessuna partita in programma":"Nessuna partita giocata";
+  const empty=tb==="next"?"Nessuna partita da giocare o da compilare":"Nessuna partita giocata";
   return`<div class="stack"><div class="head"><div><h2>Partite</h2><p class="sub">Convocati, risultato, marcatori e minuti di ogni partita.</p></div>
     <div class="row"><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div></div>
-    ${!roster().length?noPlayers():`<div class="seg mtabs" role="tablist" style="display:flex;width:100%"><button type="button" role="tab" data-a="mtab" data-v="next" aria-selected="${tb==="next"}" aria-pressed="${tb==="next"}" class="mt">Prossime (${next.length})</button><button type="button" role="tab" data-a="mtab" data-v="past" aria-selected="${tb==="past"}" aria-pressed="${tb==="past"}" class="mt">Giocate (${past.length})</button></div>
-    ${arr.length?sect("",arr,tb==="past").replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>${empty}</h3><p style="margin:0">${tb==="next"?"Premi <b>Nuova partita</b> per crearne una.":"Qui compariranno le partite dopo la data di gioco."}</p></div>`}`}</div>`;
+    ${!roster().length?noPlayers():`<div class="seg mtabs" role="tablist" style="display:flex;width:100%"><button type="button" role="tab" data-a="mtab" data-v="next" aria-selected="${tb==="next"}" aria-pressed="${tb==="next"}" class="mt">Da giocare (${next.length})</button><button type="button" role="tab" data-a="mtab" data-v="past" aria-selected="${tb==="past"}" aria-pressed="${tb==="past"}" class="mt">Giocate (${past.length})</button></div>
+    ${arr.length?sect("",arr,tb==="past").replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>${empty}</h3><p style="margin:0">${tb==="next"?"Premi <b>Nuova partita</b> per crearne una.":"Qui compariranno le partite con il risultato inserito."}</p></div>`}`}</div>`;
 }
 function newMatchDraft(){const d=new Date(today);const dow=d.getDay();const sat=dow===6?d:dow===0?addDays(d,-1):addDays(monday(d),5);return{id:null,data:iso(sat),ora:"",mister:"",avversario:"",campo:"casa",luogo:"",dirigente:"",golFatti:"",golSubiti:"",durata:45,giocatori:{}}}
 function gkFirst(l){return l.filter(p=>isGk(p.id)).concat(l.filter(p=>!isGk(p.id)))}
