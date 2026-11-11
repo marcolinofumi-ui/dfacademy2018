@@ -325,6 +325,7 @@ body.is-login::before{background:transparent}
 .ghd{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px;font-size:15px;text-transform:uppercase;letter-spacing:.04em}.ghd small{font-size:12px;opacity:.7;text-transform:none;letter-spacing:0}.ghd.own{color:var(--yellow,#ffe600)}
 .un{font-size:11px;font-weight:700;color:var(--muted,#6b7280);margin:0 6px 0 3px;align-self:center}.un.g{margin-right:0}
 .mtabs button{flex:1;padding:9px 12px;font-size:14px}.mtabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}.scor{display:block;margin-top:2px;color:var(--fg);font-weight:600}
+body.kb .tabs.bot,body.kb .savebar{display:none!important}
 </style>
 
 </head>
@@ -441,7 +442,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 22 · 11 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 23 · 11 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -899,6 +900,8 @@ async function exportSeason(){
 }
 function confirmLeave(el){if(el.dataset.c==="1")return true;el.dataset.c="1";toast("Hai modifiche non salvate: tocca di nuovo per scartarle");setTimeout(()=>{delete el.dataset.c},3000);return false}
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("tr.click")){e.target.click()}});
+const isKb=el=>el&&(el.tagName==="TEXTAREA"||(el.tagName==="INPUT"&&!/^(checkbox|radio|button|submit|file|range|color|date|time)$/.test(el.type)));
+if(matchMedia("(pointer:coarse)").matches){document.addEventListener("focusin",e=>{if(isKb(e.target))document.body.classList.add("kb")});document.addEventListener("focusout",()=>setTimeout(()=>{if(!isKb(document.activeElement))document.body.classList.remove("kb")},120))}
 document.addEventListener("input",e=>{const t=e.target;const m=S.matchEdit;
   if(m&&t.dataset.f){m[t.dataset.f]=t.value;return}
   if(m&&t.dataset.pm&&m.giocatori[t.dataset.pm]){m.giocatori[t.dataset.pm].min=t.value;return}
