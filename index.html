@@ -291,6 +291,7 @@ body.is-login::before{background:transparent}
 .ver{text-align:center;font-size:11px;color:var(--muted);opacity:.6;margin:18px 0 0}
 .dayh{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:14px;color:var(--muted);margin:18px 2px 2px}
 .dayl{font-weight:700;font-size:14px;color:var(--muted);margin:12px 2px 6px;text-transform:capitalize}
+.rit{font-size:12px}.rit.on{background:#ffe500;color:#111;border-color:#ffe500}
 .mcard{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 8px}
 .mtime{font-weight:800;font-size:18px;color:var(--fg)}
 .minfo b{display:block;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
@@ -379,6 +380,7 @@ const S={
 };
 try{const sv=JSON.parse(store.get("dfa-sess")||"null");if(sv&&sv.token){S.token=sv.token;S.me=sv;S.user=sv.user}}catch(e){}
 const isAdmin=()=>!!(S.me&&S.me.admin);
+const isDir=()=>!!(S.me&&S.me.dir);
 
 /* ---------- calcoli ---------- */
 function roster(){return Object.entries(S.players).map(([id,p])=>Object.assign({id},p)).filter(p=>p.attivo!==false)
@@ -452,12 +454,13 @@ function render(){
   if(!S.user){app.innerHTML=loginView();return}
   const u=S.me||{nome:""};
   const ICO={convocazioni:'<path d="M9 4.5h6M9 4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5M9 4.5H6.5A1.5 1.5 0 0 0 5 6v13.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H15m-6 8 2 2 4-4"/>',allenamenti:'<path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm4 10 2 2 4-4"/>',recap:'<path d="M5 20V10m7 10V4m7 16v-7"/>',partite:'<circle cx="12" cy="12" r="9"/><path d="m12 8 3.5 2.5-1.3 4h-4.4l-1.3-4Zm0-6v6m3.5 2.5L21 9.8M14.2 14.5l3.2 4.4M9.8 14.5l-3.200 4.4M8.500 10.500 3 9.800"/>',rosa:'<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.200A6.500 6.500 0 0 1 21.500 20"/>'};
-  const tabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["convocazioni","Convocazioni","Convoc."],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];
-  const navHtml=c=>`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
+  if(isDir())S.tab="partite";
+  const tabs=isDir()?[]:[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["convocazioni","Convocazioni","Convoc."],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];
+  const navHtml=c=>!tabs.length?"":`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
-    <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 26 · 11 nov 2026</p></main>${navHtml("bot")}`;
+    ${tabs.length?`<div class="wrap">${navHtml("top")}</div>`:""}</div>
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 27 · 11 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -610,8 +613,8 @@ function matchesView(){
   const isPast=m=>hasRes(m)||(m.data||"")<t;const next=all.filter(m=>!isPast(m)),past=all.filter(isPast);
   const tb=S.mTab||(next.length||!past.length?"next":"past");const arr=tb==="next"?next:past;
   const empty=tb==="next"?"Nessuna partita in programma":"Nessuna partita giocata";
-  return`<div class="stack"><div class="head"><div><h2>Partite</h2><p class="sub">Convocati, risultato, marcatori e minuti di ogni partita.</p></div>
-    <div class="row"><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div></div>
+  return`<div class="stack"><div class="head"><div><h2>Partite</h2><p class="sub">${isDir()?"Tocca una partita per inserire risultato, minuti, gol, assenti e ritardi.":"Convocati, risultato, marcatori e minuti di ogni partita."}</p></div>
+    ${isDir()?"":`<div class="row"><button class="btn primary" type="button" data-a="newmatch" ${roster().length?"":"disabled"}>Nuova partita</button></div>`}</div>
     ${!roster().length?noPlayers():`<div class="seg mtabs" role="tablist" style="display:flex;width:100%"><button type="button" role="tab" data-a="mtab" data-v="next" aria-selected="${tb==="next"}" aria-pressed="${tb==="next"}" class="mt">Prossime (${next.length})</button><button type="button" role="tab" data-a="mtab" data-v="past" aria-selected="${tb==="past"}" aria-pressed="${tb==="past"}" class="mt">Giocate (${past.length})</button></div>
     ${arr.length?sect("",arr,tb==="past").replace('<h3 class="dayh"></h3>',""):`<div class="panel"><h3>${empty}</h3><p style="margin:0">${tb==="next"?"Premi <b>Nuova partita</b> per crearne una.":"Qui compariranno le partite già giocate."}</p></div>`}`}</div>`;
 }
@@ -711,13 +714,18 @@ async function exportImg(m){
 function matchForm(){
   const m=S.matchEdit;const ps=roster();const mon=matchWeek(m.data||todayIso);
   const conv=gkFirst(ps.filter(p=>m.giocatori[p.id]));
-  const rowOf=p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);const ok=g&&!g.assente;return`<tr class="on"><td><label><b>${esc(fullName(p))}</b>${isGk(p.id)?" 🧤":""}</label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span></td>
+  const rowOf=p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);const ok=g&&!g.assente;return`<tr class="on"><td><label><b>${esc(fullName(p))}</b>${isGk(p.id)?" 🧤":""}</label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span>${g.assente?"":`<button type="button" class="btn small rit${g.ritardo?" on":""}" data-a="mrit" data-v="${p.id}" aria-pressed="${!!g.ritardo}" style="margin-left:6px">⏱ ${g.ritardo?"In ritardo":"Ritardo?"}</button>`}</td>
       <td><div class="seg" role="group" aria-label="Presenza ${esc(fullName(p))}"><button type="button" class="p" data-a="mpres" data-v="${p.id}" aria-pressed="${!g.assente}">Presente</button><button type="button" class="a" data-a="mabs" data-v="${p.id}" aria-pressed="${!!g.assente}">Assente</button></div></td>
       <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${ok?esc(g.min):""}" ${ok?"":"disabled"} placeholder="Min" aria-label="Minuti ${esc(fullName(p))}"><span class="un">min</span><input class="mini num gol" type="number" min="0" max="50" inputmode="numeric" data-pg="${p.id}" value="${ok&&+g.gol?esc(g.gol):""}" ${ok?"":"disabled"} placeholder="Gol" aria-label="Gol ${esc(fullName(p))}"><span class="un g">⚽</span></div></td></tr>`};
 
-  return`<div class="stack"><div class="head"><div><h2>${m.id?"Modifica partita":"Nuova partita"}</h2><p class="sub">Spunta i convocati, poi inserisci i minuti. Accanto a ogni nome trovi lo stato della settimana ${weekLabel(mon)}.</p></div>
+  return`<div class="stack"><div class="head"><div><h2>${isDir()?"Risultato e minuti":m.id?"Modifica partita":"Nuova partita"}</h2><p class="sub">${isDir()?"Inserisci risultato, minuti, gol, assenti e ritardi.":"Spunta i convocati, poi inserisci i minuti."} Accanto a ogni nome trovi lo stato della settimana ${weekLabel(mon)}.</p></div>
     <button class="btn" type="button" data-a="closematch">Torna all'elenco</button></div>
-    <div class="panel stack" style="gap:14px">
+    ${isDir()?`<div class="panel stack" style="gap:14px">
+      <div><b style="font-size:20px">${oppLogo(m.avversario)?`<img class="olg" src="${oppLogo(m.avversario)}" alt="">`:""}${esc(m.avversario||"—")}</b><div class="sub" style="margin:4px 0 0;line-height:1.7">📅 ${m.data?esc(fmtDay(m.data)):""}${m.ora?" · 🕙 "+esc(m.ora):""} · ${m.campo==="trasferta"?"trasferta":"casa"}${m.luogo?"<br>📍 "+esc(m.luogo):""}</div></div>
+      <div class="grid2"><div class="field" style="margin:0"><label for="m_gf">Gol fatti</label><input id="m_gf" type="number" min="0" inputmode="numeric" data-f="golFatti" value="${esc(m.golFatti)}"></div>
+        <div class="field" style="margin:0"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div></div>
+      ${m.da?`<div class="note">Ultima modifica: ${esc(m.da)}${m.quando?" "+esc(fmtWhen(m.quando)):""}</div>`:""}
+    </div>`:`    <div class="panel stack" style="gap:14px">
       <div class="field" style="margin:0"><label for="m_avv">Avversario</label><input id="m_avv" data-f="avversario" value="${esc(m.avversario)}" placeholder="Es. ASD Roma Nord" style="font-size:20px;font-weight:700"></div>
       <div class="seg" role="group" aria-label="Campo" style="display:flex;width:100%"><button type="button" class="p" data-a="setf" data-k="campo" data-v="casa" aria-pressed="${m.campo!=="trasferta"}" style="flex:1">🏠 Casa</button><button type="button" class="a" data-a="setf" data-k="campo" data-v="trasferta" aria-pressed="${m.campo==="trasferta"}" style="flex:1">🚌 Trasferta</button></div>
       <div class="field" style="margin:0"><label for="m_dir">Dirigente</label><select id="m_dir" data-f="dirigente"><option value="">— scegli —</option>${DIRIGENTI.concat(m.dirigente&&!DIRIGENTI.includes(m.dirigente)?[m.dirigente]:[]).map(x=>`<option value="${esc(x)}" ${m.dirigente===x?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
@@ -732,11 +740,11 @@ function matchForm(){
         <div class="field"><label for="m_dur">Durata (minuti)</label><input id="m_dur" type="number" min="1" max="120" inputmode="numeric" data-f="durata" value="${esc(m.durata)}"></div>
         <div class="field"><label for="m_gf">Gol fatti</label><input id="m_gf" type="number" min="0" inputmode="numeric" data-f="golFatti" value="${esc(m.golFatti)}"></div>
         <div class="field"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div></div>`:""}</div>
-    </div>
+    </div>`}
     <div class="row" style="justify-content:space-between"><h3 style="margin:0">Giocatori · <span class="num" id="convcount">${conv.length}</span> convocati</h3>
-      <div class="row"><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button><button class="btn small" type="button" data-a="expimg">Esporta immagine</button></div></div>
+      ${isDir()?"":`<div class="row"><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button><button class="btn small" type="button" data-a="expimg">Esporta immagine</button></div>`}</div>
     <div class="tablewrap mtable"><table><thead><tr><th>Giocatore</th><th>Presenza</th><th class="r">Minuti · Gol</th></tr></thead><tbody>
-    ${conv.length?conv.map(rowOf).join(""):`<tr><td colspan="3" class="sub" style="display:block;padding:14px">Nessun convocato: scegli i convocati dal Recap.</td></tr>`}</tbody></table></div>
+    ${conv.length?conv.map(rowOf).join(""):`<tr><td colspan="3" class="sub" style="display:block;padding:14px">Nessun convocato: ${isDir()?"li inserisce il mister":"scegli i convocati dal Recap."}</td></tr>`}</tbody></table></div>
     ${m.id&&isAdmin()?`<div><button class="btn danger small" type="button" data-a="delmatch">Elimina partita</button></div>`:""}
     <div class="savebar"><div class="wrap"><div class="grow">${esc(m.avversario||"Partita")} · ${m.data?fmtDay(m.data):""}</div><button class="btn" type="button" data-a="closematch">Annulla</button><button class="btn primary" type="button" data-a="savematch">Salva partita</button></div></div></div>`;
 }
@@ -853,13 +861,14 @@ document.addEventListener("click",async e=>{
   case"closematch":S.matchEdit=null;S.pending=false;render();break;
   case"conv":{const m=S.matchEdit;if(el.checked)m.giocatori[v]={min:"",gol:0};else delete m.giocatori[v];S.pending=false;render();break}
   case"mpres":{const g=S.matchEdit.giocatori[v];if(g){g.assente=false;S.pending=false;render()}break}
-  case"mabs":{const g=S.matchEdit.giocatori[v];if(g){g.assente=true;g.min="";g.gol=0;S.pending=false;render()}break}
+  case"mrit":{const g=S.matchEdit.giocatori[v];if(g&&!g.assente){g.ritardo=!g.ritardo;S.pending=false;render()}break}
+  case"mabs":{const g=S.matchEdit.giocatori[v];if(g){g.assente=true;g.ritardo=false;g.min="";g.gol=0;S.pending=false;render()}break}
   case"fullmin":{const m=S.matchEdit;if(m.giocatori[v]){m.giocatori[v].min=+m.durata||45;const i=document.querySelector(`[data-pm="${v}"]`);if(i)i.value=m.giocatori[v].min}break}
   case"gtoggle":{S.gOpen=S.gOpen||{};const cur=(v in S.gOpen)?S.gOpen[v]:(v===gOf(S.user));S.gOpen[v]=!cur;render();break}
   case"rcopen":S.rcOpen=(!v||S.rcOpen===v)?null:v;render();break
   case"rcconv":toggleConv(v,el.dataset.m);break
   case"savematch":{const m=S.matchEdit;if(!m.data){toast("Inserisci la data della partita");return}
-    const gi={};Object.entries(m.giocatori).forEach(([pid,g])=>{if(S.players[pid])gi[pid]={min:g.assente?0:Math.max(0,+g.min||0),assente:!!g.assente,gol:g.assente?0:Math.max(0,+g.gol||0)}});
+    const gi={};Object.entries(m.giocatori).forEach(([pid,g])=>{if(S.players[pid])gi[pid]={min:g.assente?0:Math.max(0,+g.min||0),assente:!!g.assente,gol:g.assente?0:Math.max(0,+g.gol||0),ritardo:!g.assente&&!!g.ritardo}});
     const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,luogo:(m.luogo||"").trim(),dirigente:(m.dirigente||"").trim(),golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
     const ok=await write(db=>(m.id?db.doc("matches/"+m.id):db.collection("matches").doc()).set(body),"Partita salvata");if(ok){S.matchEdit=null;S.pending=false;render()}break}
   case"delmatch":if(el.dataset.c!=="1"){el.dataset.c="1";el.textContent="Conferma eliminazione";return}
@@ -903,10 +912,10 @@ async function exportSeason(){
     ps.forEach(p=>{const row=[fullName(p)];let a=0,b=0,c=0;weeks.forEach(w=>{const wi=weekInfo(p.id,parse(w));row.push(wi.count+"/3");wi.st==="doppia"?a++:wi.st==="conv"?b++:c++});row.push(a,b,c);r3.push(row)});
     add("Recap settimanale",r3,[22].concat(weeks.map(()=>11)).concat([13,13,15]));
     /* 4 partite */
-    const r4=[["Data","Avversario","Campo","Gol fatti","Gol subiti","Durata (min)","Convocati"]];
+    const r4=[["Data","Avversario","Campo","Gol fatti","Gol subiti","Durata (min)","Convocati","In ritardo"]];
     ms.forEach(m=>{const gi=m.giocatori||{};
-      r4.push([m.data?dlab(m.data)+"/"+m.data.slice(0,4):"",m.avversario||"",m.campo==="trasferta"?"Trasferta":"Casa",m.golFatti===""?"":m.golFatti,m.golSubiti===""?"":m.golSubiti,+m.durata||"",Object.keys(gi).length])});
-    add("Partite",r4,[12,24,10,9,9,11,10]);
+      r4.push([m.data?dlab(m.data)+"/"+m.data.slice(0,4):"",m.avversario||"",m.campo==="trasferta"?"Trasferta":"Casa",m.golFatti===""?"":m.golFatti,m.golSubiti===""?"":m.golSubiti,+m.durata||"",Object.keys(gi).length,Object.entries(gi).filter(([id,x])=>x.ritardo&&S.players[id]).map(([id])=>fullName(S.players[id])).join(", ")])});
+    add("Partite",r4,[12,24,10,9,9,11,10,30]);
     /* 5 minutaggio */
     const r5=[["Giocatore"].concat(ms.map(m=>(m.data?dlab(m.data):"")+" "+(m.avversario||""))).concat(["Totale minuti"])];
     ps.forEach(p=>{let t=0;const row=[fullName(p)];ms.forEach(m=>{const x=m.giocatori&&m.giocatori[p.id];if(x){t+=+x.min||0;row.push(+x.min||0)}else row.push("")});row.push(t);r5.push(row)});
