@@ -123,6 +123,8 @@ h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .savebar .wrap{display:flex;gap:10px;align-items:center;padding-block:10px}
 .savebar .grow{flex:1;min-width:0;font-size:14px;color:var(--muted)}
 
+.thb{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;padding:4px 0}
+.thb:focus-visible{outline:2px solid var(--accent,#ffe500);outline-offset:2px}
 .olg{width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px}
 .olg.big{width:40px;height:40px;margin:0}
 /* badge stato convocazione */
@@ -742,15 +744,18 @@ function matchForm(){
 /* --- rosa --- */
 function rosaView(){
   const ps=roster().map(p=>Object.assign(p,{s:playerStats(p.id)}));
-  const sorters={cognome:null,all:(a,b)=>b.s.trPct-a.s.trPct,part:(a,b)=>b.s.mPct-a.s.mPct,min:(a,b)=>b.s.min-a.s.min,dop:(a,b)=>b.s.dop-a.s.dop||b.s.played-a.s.played};
-  if(sorters[S.sort])ps.sort(sorters[S.sort]);
+  const lc=(a,b)=>(a.cognome||"").localeCompare(b.cognome||"","it")||(a.nome||"").localeCompare(b.nome||"","it");
+  const sorters={cognome:lc,num:(a,b)=>(parseInt(a.numero)||999)-(parseInt(b.numero)||999)||lc(a,b),all:(a,b)=>b.s.trPct-a.s.trPct||lc(a,b),part:(a,b)=>b.s.mPct-a.s.mPct||lc(a,b),dop:(a,b)=>b.s.dop-a.s.dop||b.s.played-a.s.played||lc(a,b),min:(a,b)=>b.s.min-a.s.min||lc(a,b),sett:(a,b)=>weekInfo(b.id,monday(today)).count-weekInfo(a.id,monday(today)).count||lc(a,b)};
+  const asc=S.sortAsc===undefined?(S.sort==="cognome"||S.sort==="num"):S.sortAsc;const natAsc=S.sort==="cognome"||S.sort==="num";
+  ps.sort(sorters[S.sort]||sorters.cognome);if(asc!==natAsc)ps.reverse();
+  const th=(k,l,cls)=>`<th class="${cls||""}" aria-sort="${S.sort===k?(asc?"ascending":"descending"):"none"}"><button type="button" class="thb" data-a="sortcol" data-v="${k}">${l}${S.sort===k?(asc?" ▲":" ▼"):""}</button></th>`;
   const mon=monday(today);
   return`<div class="stack"><div class="head"><div><h2>Rosa e schede</h2><p class="sub">${ps.length} giocatori · tocca un nome per aprire la scheda.</p></div>
     <div class="row"><div class="field" style="flex-direction:row;align-items:center;gap:6px"><label for="sortsel" style="white-space:nowrap">Ordina</label><select id="sortsel" data-a="sort" style="width:auto"><option value="cognome" ${S.sort==="cognome"?"selected":""}>Cognome</option><option value="all" ${S.sort==="all"?"selected":""}>% allenamenti</option><option value="part" ${S.sort==="part"?"selected":""}>% partite</option><option value="dop" ${S.sort==="dop"?"selected":""}>Doppie</option><option value="min" ${S.sort==="min"?"selected":""}>Minuti</option></select></div>
     ${S.dl&&ps.length?`<button class="btn" type="button" data-a="export" ${S.exporting?"disabled":""}>${S.exporting?"Preparo il file…":"Esporta stagione in Excel"}</button>`:""}
     ${isAdmin()?`<button class="btn primary" type="button" data-a="addplayer">Aggiungi giocatori</button>`:""}</div></div>
     ${S.showBulk&&isAdmin()?bulkForm():""}
-    ${ps.length?`<div class="tablewrap"><table><thead><tr><th>#</th><th>Giocatore</th><th class="r">Allen.</th><th class="r">Partite</th><th class="r">Doppie</th><th class="r hide-s">Minuti</th><th class="hide-s">Settimana</th></tr></thead><tbody>
+    ${ps.length?`<div class="tablewrap"><table><thead><tr>${th("num","#")}${th("cognome","Giocatore")}${th("all","Allen.","r")}${th("part","Partite","r")}${th("dop","Doppie","r")}${th("min","Minuti","r hide-s")}${th("sett","Settimana","hide-s")}</tr></thead><tbody>
     ${ps.map(p=>{const c=certState(p);const w=weekInfo(p.id,mon);return`<tr class="click" data-a="openplayer" data-v="${p.id}" tabindex="0"><td class="num"><span class="shirt">${esc(p.numero||"")}</span></td>
       <td><b>${esc(fullName(p))}</b>${c?`<br><span class="badge ${c.c}">${esc(c.l)}</span>`:""}</td><td class="r num">${p.s.trPct}%</td><td class="r num">${p.s.mPct}%</td><td class="r num">${p.s.dop}</td><td class="r num hide-s">${p.s.min}'</td>
       <td class="hide-s">${ticks(w.marks)}</td></tr>`}).join("")}</tbody></table></div>`
@@ -859,6 +864,7 @@ document.addEventListener("click",async e=>{
     const ok=await write(db=>(m.id?db.doc("matches/"+m.id):db.collection("matches").doc()).set(body),"Partita salvata");if(ok){S.matchEdit=null;S.pending=false;render()}break}
   case"delmatch":if(el.dataset.c!=="1"){el.dataset.c="1";el.textContent="Conferma eliminazione";return}
     if(await write(db=>db.doc("matches/"+S.matchEdit.id).delete(),"Partita eliminata")){S.matchEdit=null;render()}break;
+  case"sortcol":{if(S.sort===v){const cur=S.sortAsc===undefined?(v==="cognome"||v==="num"):S.sortAsc;S.sortAsc=!cur}else{S.sort=v;S.sortAsc=undefined}render();break}
   case"export":exportSeason();break;
   case"period":{if(v==="all")S.pf={key:"all",from:"",to:""};else if(v==="4w")S.pf={key:"4w",from:iso(addDays(today,-27)),to:todayIso};
     else{const[y,m]=v.slice(1).split("-").map(Number);S.pf={key:v,from:iso(new Date(y,m-1,1)),to:iso(new Date(y,m,0))}}render();break}
@@ -920,7 +926,7 @@ document.addEventListener("input",e=>{const t=e.target;const m=S.matchEdit;
   if(m&&t.dataset.pm&&m.giocatori[t.dataset.pm]){m.giocatori[t.dataset.pm].min=t.value;return}
   if(m&&t.dataset.pg&&m.giocatori[t.dataset.pg]){m.giocatori[t.dataset.pg].gol=t.value;return}
 });
-document.addEventListener("change",e=>{const t=e.target;if(t.dataset.a==="sort"){S.sort=t.value;render()}
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset.a==="sort"){S.sort=t.value;S.sortAsc=undefined;render()}
   if(t.dataset.pf){S.pf[t.dataset.pf]=t.value;S.pf.key=(S.pf.from||S.pf.to)?"custom":"all";S.pending=false;render()}
   if(S.matchEdit&&t.dataset.f==="data"){S.pending=false;render()}});
 function showCopyFallback(txt){const main=document.getElementById("main");const box=document.createElement("div");box.className="panel stack";
