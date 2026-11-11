@@ -455,14 +455,14 @@ function render(){
   if(!S.user){app.innerHTML=loginView();return}
   const u=S.me||{nome:""};
   const ICO={convocazioni:'<path d="M9 4.5h6M9 4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5M9 4.5H6.5A1.5 1.5 0 0 0 5 6v13.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H15m-6 8 2 2 4-4"/>',allenamenti:'<path d="M8 2v3M16 2v3M3.5 9h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm4 10 2 2 4-4"/>',recap:'<path d="M5 20V10m7 10V4m7 16v-7"/>',partite:'<circle cx="12" cy="12" r="9"/><path d="m12 8 3.5 2.5-1.3 4h-4.4l-1.3-4Zm0-6v6m3.5 2.5L21 9.8M14.2 14.5l3.2 4.4M9.8 14.5l-3.200 4.4M8.500 10.500 3 9.800"/>',rosa:'<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0M16 4.800a3.500 3.500 0 0 1 0 6.400M18.500 14.200A6.500 6.500 0 0 1 21.500 20"/>'};
-  if(isDir()&&!["convocazioni","partite","rosa"].includes(S.tab))S.tab="partite";
-  const allTabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["convocazioni","Convocazioni","Convoc."],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];const tabs=isDir()?allTabs.filter(t=>["convocazioni","partite","rosa"].includes(t[0])):allTabs;
+  if(isDir()&&!["convocazioni","partite"].includes(S.tab))S.tab="partite";
+  const allTabs=[["allenamenti","Allenamenti","Allen."],["recap","Recap settimana","Recap"],["convocazioni","Convocazioni","Convoc."],["partite","Partite","Partite"],["rosa","Rosa e schede","Rosa"]];const tabs=isDir()?allTabs.filter(t=>["convocazioni","partite"].includes(t[0])):allTabs;
   document.body.classList.toggle("nonav",!tabs.length);
   const navHtml=c=>!tabs.length?"":`<nav class="tabs ${c}" role="tablist">${tabs.map(([k,l,sh])=>`<button role="tab" type="button" data-a="tab" data-v="${k}" aria-selected="${S.tab===k}"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg></span><span class="tl">${l}</span><span class="ts">${sh}</span></button>`).join("")}</nav>`;
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     ${tabs.length?`<div class="wrap">${navHtml("top")}</div>`:""}</div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 29 · 11 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 30 · 11 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
