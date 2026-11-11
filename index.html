@@ -405,8 +405,10 @@ const gs=async(fn,...args)=>{
 function applyData(d){if(!d)return;S.players=d.players||{};S.trainings=d.trainings||{};S.matches=d.matches||{};S.got={p:true,t:true,m:true};S.dbState="ok";if(!S.dirty)S.draft=null}
 function sessionLost(e){if(e&&String(e.message||e).indexOf("SESSIONE")>=0){S.user=null;S.me=null;S.token=null;store.set("dfa-sess",null);render();toast("Sessione scaduta: rientra con utente e password");return true}return false}
 let loading=false,lastLoad=0;
+let loghiAt=0;let lgRaw=null,lgVal=[];function readLoghi(){const r=store.get("dfa-loghi")||"[]";if(r!==lgRaw){lgRaw=r;try{lgVal=JSON.parse(r)}catch(e){lgVal=[]}}return lgVal}
+async function loadLoghi(){if(Date.now()-loghiAt<600000)return;loghiAt=Date.now();try{const l=await gs("getLoghi",S.token);if(Array.isArray(l)){store.set("dfa-loghi",JSON.stringify(l));softRender()}}catch(e){}}
 async function initDb(){if(!S.token||loading)return;loading=true;
-  try{applyData(await gs("getAll",S.token));lastLoad=Date.now();softRender()}
+  try{applyData(await gs("getAll",S.token));lastLoad=Date.now();softRender();loadLoghi()}
   catch(e){if(!sessionLost(e)){S.dbState=S.got.p?"slow":"error";render()}}
   finally{loading=false}}
 setInterval(()=>{if(S.token&&!S.dirty&&!S.matchEdit&&!S.playerEdit&&document.visibilityState==="visible"&&Date.now()-lastLoad>55000)initDb()},15000);
@@ -608,7 +610,7 @@ async function shareBlob(blob,name,type){const f=new File([blob],name,{type});
   const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("File scaricato")}
 const dMon=d=>{if(!d)return"";const x=new Date(d+"T12:00:00");return["DOM","LUN","MAR","MER","GIO","VEN","SAB"][x.getDay()]+" "+String(x.getDate()).padStart(2,"0")+"/"+String(x.getMonth()+1).padStart(2,"0")};
 const LOGHI=[[/labico/i,"labico"],[/artena|montefortino/i,"artena"],[/torrenova/i,"torrenova"],[/\bpvp\b|perconti/i,"pvp"]];
-const oppLogo=n=>{const r=LOGHI.find(x=>x[0].test(n||""));return r?"loghi/"+r[1]+".png":""};
+const oppLogo=n=>{const ex=readLoghi().find(x=>String(x.parole||x.k).split(/[,|]/).map(w=>w.trim().toLowerCase()).filter(Boolean).some(w=>String(n||"").toLowerCase().indexOf(w)>=0));if(ex)return ex.img;const r=LOGHI.find(x=>x[0].test(n||""));return r?"loghi/"+r[1]+".png":""};
 async function posterCanvas(m){
   try{await document.fonts.load('800 100px "Big Shoulders Display"')}catch(e){}
   const W=1080,H=1620,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
