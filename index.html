@@ -742,17 +742,17 @@ function matchForm(){
 /* --- rosa --- */
 function rosaView(){
   const ps=roster().map(p=>Object.assign(p,{s:playerStats(p.id)}));
-  const sorters={cognome:null,all:(a,b)=>b.s.trPct-a.s.trPct,part:(a,b)=>b.s.mPct-a.s.mPct,min:(a,b)=>b.s.min-a.s.min};
+  const sorters={cognome:null,all:(a,b)=>b.s.trPct-a.s.trPct,part:(a,b)=>b.s.mPct-a.s.mPct,min:(a,b)=>b.s.min-a.s.min,dop:(a,b)=>b.s.dop-a.s.dop||b.s.played-a.s.played};
   if(sorters[S.sort])ps.sort(sorters[S.sort]);
   const mon=monday(today);
   return`<div class="stack"><div class="head"><div><h2>Rosa e schede</h2><p class="sub">${ps.length} giocatori · tocca un nome per aprire la scheda.</p></div>
-    <div class="row"><div class="field" style="flex-direction:row;align-items:center;gap:6px"><label for="sortsel" style="white-space:nowrap">Ordina</label><select id="sortsel" data-a="sort" style="width:auto"><option value="cognome" ${S.sort==="cognome"?"selected":""}>Cognome</option><option value="all" ${S.sort==="all"?"selected":""}>% allenamenti</option><option value="part" ${S.sort==="part"?"selected":""}>% partite</option><option value="min" ${S.sort==="min"?"selected":""}>Minuti</option></select></div>
+    <div class="row"><div class="field" style="flex-direction:row;align-items:center;gap:6px"><label for="sortsel" style="white-space:nowrap">Ordina</label><select id="sortsel" data-a="sort" style="width:auto"><option value="cognome" ${S.sort==="cognome"?"selected":""}>Cognome</option><option value="all" ${S.sort==="all"?"selected":""}>% allenamenti</option><option value="part" ${S.sort==="part"?"selected":""}>% partite</option><option value="dop" ${S.sort==="dop"?"selected":""}>Doppie</option><option value="min" ${S.sort==="min"?"selected":""}>Minuti</option></select></div>
     ${S.dl&&ps.length?`<button class="btn" type="button" data-a="export" ${S.exporting?"disabled":""}>${S.exporting?"Preparo il file…":"Esporta stagione in Excel"}</button>`:""}
     ${isAdmin()?`<button class="btn primary" type="button" data-a="addplayer">Aggiungi giocatori</button>`:""}</div></div>
     ${S.showBulk&&isAdmin()?bulkForm():""}
-    ${ps.length?`<div class="tablewrap"><table><thead><tr><th>#</th><th>Giocatore</th><th class="r">Allen.</th><th class="r">Partite</th><th class="r hide-s">Minuti</th><th class="hide-s">Settimana</th></tr></thead><tbody>
+    ${ps.length?`<div class="tablewrap"><table><thead><tr><th>#</th><th>Giocatore</th><th class="r">Allen.</th><th class="r">Partite</th><th class="r">Doppie</th><th class="r hide-s">Minuti</th><th class="hide-s">Settimana</th></tr></thead><tbody>
     ${ps.map(p=>{const c=certState(p);const w=weekInfo(p.id,mon);return`<tr class="click" data-a="openplayer" data-v="${p.id}" tabindex="0"><td class="num"><span class="shirt">${esc(p.numero||"")}</span></td>
-      <td><b>${esc(fullName(p))}</b>${c?`<br><span class="badge ${c.c}">${esc(c.l)}</span>`:""}</td><td class="r num">${p.s.trPct}%</td><td class="r num">${p.s.mPct}%</td><td class="r num hide-s">${p.s.min}'</td>
+      <td><b>${esc(fullName(p))}</b>${c?`<br><span class="badge ${c.c}">${esc(c.l)}</span>`:""}</td><td class="r num">${p.s.trPct}%</td><td class="r num">${p.s.mPct}%</td><td class="r num">${p.s.dop}</td><td class="r num hide-s">${p.s.min}'</td>
       <td class="hide-s">${ticks(w.marks)}</td></tr>`}).join("")}</tbody></table></div>`
     :`<div class="panel"><h3>Rosa vuota</h3><p style="margin:0">${isAdmin()?"Premi <b>Aggiungi giocatori</b> e incolla l'elenco della rosa, un giocatore per riga.":"La rosa viene caricata dall'utente admin."}</p></div>`}</div>`;
 }
