@@ -629,8 +629,8 @@ async function posterCanvas(m){
   sh(()=>{x.fillStyle=Y;x.font="italic 800 124px "+F;x.fillText("CONVOCAZIONE",W/2,118)});
   x.fillStyle="#fff";x.font="800 70px "+F;x.fillText("CATEGORIA",W/2,208);
   sh(()=>{x.fillStyle=Y;x.font="800 160px "+F;x.fillText("UNDER 9",W/2,360)});
-  const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="icons/icon-512.png"});
-  if(img){x.save();x.beginPath();x.roundRect(40,160,215,215,38);x.clip();x.drawImage(img,40,160,215,215);x.restore()}
+  const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="icons/logo-df.png"});
+  if(img){x.save();x.shadowColor="rgba(0,0,0,.5)";x.shadowBlur=14;x.shadowOffsetY=6;const lh=235,lw=Math.round(lh*img.width/img.height);x.drawImage(img,148-lw/2,155,lw,lh);x.restore()}
   const opp=(m.avversario||"AVVERSARIO").toUpperCase();
   const ini=opp.split(/\s+/).filter(w=>w.length>1).slice(0,2).map(w=>w[0]).join("")||opp[0];
   const ol=oppLogo(m.avversario);const oi=ol?await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=ol}):null;
