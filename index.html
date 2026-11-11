@@ -413,12 +413,17 @@ const gs=async(fn,...args)=>{
 function applyData(d){if(!d)return;S.players=d.players||{};S.trainings=d.trainings||{};S.matches=d.matches||{};S.got={p:true,t:true,m:true};S.dbState="ok";if(!S.dirty)S.draft=null}
 function sessionLost(e){if(e&&String(e.message||e).indexOf("SESSIONE")>=0){S.user=null;S.me=null;S.token=null;store.set("dfa-sess",null);render();toast("Sessione scaduta: rientra con utente e password");return true}return false}
 let loading=false,lastLoad=0;
-let PRE=null;(async()=>{try{const r=await fetch("pregresso.json",{cache:"no-store"});if(r.ok){PRE=await r.json();softRender&&softRender()}}catch(e){}})();
+let PRE=null;const PRE_URL="https://raw.githubusercontent.com/marcolinofumi-ui/dfacademy2018/versione-22/pregresso.json";
+async function loadPre(){let d=null;
+  try{const r=await fetch(PRE_URL+"?t="+Math.floor(Date.now()/300000),{cache:"no-store"});if(r.ok)d=await r.json()}catch(e){}
+  if(!d){try{const r=await fetch("pregresso.json",{cache:"no-store"});if(r.ok)d=await r.json()}catch(e){}}
+  const nuovo=d&&d.attivo!==false?d:null;if(JSON.stringify(nuovo)!==JSON.stringify(PRE)){PRE=nuovo;try{softRender()}catch(e){}}}
+loadPre();
 const preOf=pid=>{if(!PRE)return null;const p=S.players[pid];if(!p)return null;const g=PRE.giocatori,c=String(p.cognome||"").trim();const ini=String(p.nome||"").trim().charAt(0).toUpperCase();
   return g[c+" "+ini+"."]||(g[c]&&!Object.keys(g).some(k=>k.indexOf(c+" ")===0)?g[c]:null)||null};
 let loghiAt=0;let lgRaw=null,lgVal=[];function readLoghi(){const r=store.get("dfa-loghi")||"[]";if(r!==lgRaw){lgRaw=r;try{lgVal=JSON.parse(r)}catch(e){lgVal=[]}}return lgVal}
 const LOGHI_URL="https://raw.githubusercontent.com/marcolinofumi-ui/dfacademy2018/versione-22/loghi/loghi.tsv";
-async function loadLoghi(){if(Date.now()-loghiAt<600000)return;loghiAt=Date.now();let gh=null,sh=null;
+async function loadLoghi(){if(Date.now()-loghiAt<600000)return;loghiAt=Date.now();loadPre();let gh=null,sh=null;
   try{const r=await fetch(LOGHI_URL+"?t="+Math.floor(Date.now()/600000),{cache:"no-store"});if(r.ok)gh=(await r.text()).split(/\r?\n/).map(l=>l.split("\t")).filter(x=>x[0]&&String(x[2]||"").indexOf("data:image")===0).map(x=>({k:x[0].trim(),parole:(x[1]||x[0]).trim(),img:x[2].trim()}))}catch(e){}
   try{const l=await gs("getLoghi",S.token);if(Array.isArray(l))sh=l}catch(e){}
   if(!gh&&!sh)return;const m={};(gh||[]).concat(sh||[]).forEach(x=>{m[x.k]=x});store.set("dfa-loghi",JSON.stringify(Object.values(m)));softRender()}
@@ -450,7 +455,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 23 · 11 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 24 · 11 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
