@@ -342,6 +342,7 @@ const MOTIVI=["Giustificata"];
 const GRUPPI=[["gianni","MR Di Petrillo","g.dipetrillo"],["pierluigi","MR Lucatelli","p.lucatelli"],["riccardo","MR Verde","r.verde"]];
 const gOf=u=>(GRUPPI.find(g=>g[2]===u)||[])[0]||"";
 const MISTER=["Verde","Di Petrillo","Lucatelli"];
+const DIRIGENTI=["Freddi","Scarnicci","Fiocchetti"];
 const ROLES=["","Portiere","Difensore","Centrocampista","Attaccante"];
 
 /* ---------- date ---------- */
@@ -703,7 +704,7 @@ function matchForm(){
     <div class="panel stack" style="gap:14px">
       <div class="field" style="margin:0"><label for="m_avv">Avversario</label><input id="m_avv" data-f="avversario" value="${esc(m.avversario)}" placeholder="Es. ASD Roma Nord" style="font-size:20px;font-weight:700"></div>
       <div class="seg" role="group" aria-label="Campo" style="display:flex;width:100%"><button type="button" class="p" data-a="setf" data-k="campo" data-v="casa" aria-pressed="${m.campo!=="trasferta"}" style="flex:1">🏠 Casa</button><button type="button" class="a" data-a="setf" data-k="campo" data-v="trasferta" aria-pressed="${m.campo==="trasferta"}" style="flex:1">🚌 Trasferta</button></div>
-      <div class="field" style="margin:0"><label for="m_dir">Dirigente</label><input id="m_dir" data-f="dirigente" value="${esc(m.dirigente||"")}" placeholder="Es. Scarnicci"></div>
+      <div class="field" style="margin:0"><label for="m_dir">Dirigente</label><select id="m_dir" data-f="dirigente"><option value="">— scegli —</option>${DIRIGENTI.concat(m.dirigente&&!DIRIGENTI.includes(m.dirigente)?[m.dirigente]:[]).map(x=>`<option value="${esc(x)}" ${m.dirigente===x?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
       <div class="field" style="margin:0"><label for="m_luogo">📍 Luogo della partita</label><input id="m_luogo" data-f="luogo" value="${esc(m.luogo||"")}" placeholder="Es. Campo Sportivo Tor Tre Teste, Via…"></div>
       <div class="grid2">
         <div class="field" style="margin:0"><label for="m_data">📅 Data</label><input id="m_data" type="date" data-f="data" value="${esc(m.data)}"></div>
