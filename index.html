@@ -123,7 +123,8 @@ h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .savebar .wrap{display:flex;gap:10px;align-items:center;padding-block:10px}
 .savebar .grow{flex:1;min-width:0;font-size:14px;color:var(--muted)}
 
-.olg{width:28px;height:28px;object-fit:contain;vertical-align:middle;margin-right:6px}
+.olg{width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px}
+.olg.big{width:40px;height:40px;margin:0}
 /* badge stato convocazione */
 .badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap}
 .b-doppia{background:var(--gold-soft);color:var(--gold)}
@@ -439,7 +440,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 20 · 11 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 21 · 11 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -575,7 +576,7 @@ function convView(){
   const tot=Object.keys(cnt).length,dbl=Object.values(cnt).filter(n=>n>1).length;
   const card=m=>{const l=gkFirst(roster().filter(p=>m.giocatori&&m.giocatori[p.id]));
     let d="";if(m.data){const x=new Date(m.data+"T12:00:00");d=x.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});d=d.charAt(0).toUpperCase()+d.slice(1)}
-    return`<section class="panel stack" style="gap:10px"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="sub" style="margin:0">${esc(d)}</div><h3 style="margin:2px 0 0;font-size:20px;text-transform:none;letter-spacing:0;color:var(--text)">vs ${esc(m.avversario||"da definire")}</h3></div><button class="btn small" type="button" data-a="gomatch" data-v="${m.id}">Modifica</button></div>
+    return`<section class="panel stack" style="gap:10px"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="sub" style="margin:0">${esc(d)}</div><h3 style="margin:2px 0 0;font-size:20px;text-transform:none;letter-spacing:0;color:var(--text);display:flex;align-items:center;gap:8px">${oppLogo(m.avversario)?`<img class="olg big" src="${oppLogo(m.avversario)}" alt="">`:""}<span>vs ${esc(m.avversario||"da definire")}</span></h3></div><button class="btn small" type="button" data-a="gomatch" data-v="${m.id}">Modifica</button></div>
       <div class="sub" style="margin:0;line-height:1.7">🕙 <b>${esc(m.ora||"orario da definire")}</b> · ritrovo <b>${m.ora?esc(minusMin(m.ora,45)):"da definire"}</b><br>📍 ${m.luogo?esc(m.luogo):`<span style="color:var(--warn,#e0a030)">luogo da definire</span>`} · ${m.campo==="trasferta"?"trasferta":"casa"}<br>👤 mister ${esc(m.mister||"–")} · dirigente ${esc(m.dirigente||"–")}</div>
       <div><h3 style="margin:0 0 6px">Convocati (${l.length})</h3>${l.length?`<div class="mchips">${l.map(p=>`<span class="mchip">${esc(fullName(p))}${isGk(p.id)?" 🧤":""}${cnt[p.id]>1?" ×"+cnt[p.id]:""}</span>`).join("")}</div>`:`<p class="sub" style="margin:0">Nessun convocato: sceglili dal Recap settimana.</p>`}</div></section>`};
   return`<div class="stack"><div class="head"><div><h2>Convocazioni</h2><p class="sub">Recap delle convocazioni della settimana e PDF da condividere.</p></div>
