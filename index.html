@@ -360,7 +360,7 @@ const fmtDay=s=>parse(s).toLocaleDateString("it-IT",{weekday:"short",day:"numeri
 const fmtShort=s=>parse(s).toLocaleDateString("it-IT",{day:"numeric",month:"short"});
 const weekLabel=mon=>{const a=mon,b=addDays(mon,4);return a.getMonth()===b.getMonth()?a.getDate()+"–"+b.toLocaleDateString("it-IT",{day:"numeric",month:"short"}):fmtShort(iso(a))+" – "+fmtShort(iso(b))};
 const DAYNAMES=["Lun","Mer","Ven"];
-function defaultTrainingDate(){const ds=weekDays(monday(today));let pick=ds[0];ds.forEach(d=>{if(d<=todayIso)pick=d});return pick}
+function defaultTrainingDate(){/* oggi se è giorno di allenamento (lun, mer, ven), altrimenti il primo successivo */for(let i=0;i<8;i++){const d=addDays(new Date(today.getFullYear(),today.getMonth(),today.getDate()),i);if([1,3,5].includes(d.getDay()))return iso(d)}return todayIso}
 function matchWeek(dateIso){const d=parse(dateIso);const dow=d.getDay();/* sab/dom → settimana appena finita */return monday(dow===0||dow===6?d:d)}
 
 /* ---------- helpers ---------- */
@@ -373,7 +373,7 @@ let toastT;function toast(msg){const t=document.getElementById("toast");t.textCo
 const S={
   user:null,me:null,token:null,tab:"allenamenti",dbState:"loading",
   players:{},trainings:{},matches:{},got:{p:false,t:false,m:false},
-  trWeek:monday(today),trDate:defaultTrainingDate(),draft:null,dirty:false,
+  trDate:defaultTrainingDate(),trWeek:monday(parse(defaultTrainingDate())),draft:null,dirty:false,
   recapWeek:monday(today),convWeek:monday(today),
   matchEdit:null,pf:{key:"all",from:"",to:""},playerOpen:null,playerEdit:null,showBulk:false,sort:"cognome",pending:false,saving:false
 };
