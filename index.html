@@ -406,7 +406,11 @@ function applyData(d){if(!d)return;S.players=d.players||{};S.trainings=d.trainin
 function sessionLost(e){if(e&&String(e.message||e).indexOf("SESSIONE")>=0){S.user=null;S.me=null;S.token=null;store.set("dfa-sess",null);render();toast("Sessione scaduta: rientra con utente e password");return true}return false}
 let loading=false,lastLoad=0;
 let loghiAt=0;let lgRaw=null,lgVal=[];function readLoghi(){const r=store.get("dfa-loghi")||"[]";if(r!==lgRaw){lgRaw=r;try{lgVal=JSON.parse(r)}catch(e){lgVal=[]}}return lgVal}
-async function loadLoghi(){if(Date.now()-loghiAt<600000)return;loghiAt=Date.now();try{const l=await gs("getLoghi",S.token);if(Array.isArray(l)){store.set("dfa-loghi",JSON.stringify(l));softRender()}}catch(e){}}
+const LOGHI_URL="https://raw.githubusercontent.com/marcolinofumi-ui/dfacademy2018/versione-22/loghi/loghi.tsv";
+async function loadLoghi(){if(Date.now()-loghiAt<600000)return;loghiAt=Date.now();let gh=null,sh=null;
+  try{const r=await fetch(LOGHI_URL+"?t="+Math.floor(Date.now()/600000),{cache:"no-store"});if(r.ok)gh=(await r.text()).split(/\r?\n/).map(l=>l.split("\t")).filter(x=>x[0]&&String(x[2]||"").indexOf("data:image")===0).map(x=>({k:x[0].trim(),parole:(x[1]||x[0]).trim(),img:x[2].trim()}))}catch(e){}
+  try{const l=await gs("getLoghi",S.token);if(Array.isArray(l))sh=l}catch(e){}
+  if(!gh&&!sh)return;const m={};(gh||[]).concat(sh||[]).forEach(x=>{m[x.k]=x});store.set("dfa-loghi",JSON.stringify(Object.values(m)));softRender()}
 async function initDb(){if(!S.token||loading)return;loading=true;
   try{applyData(await gs("getAll",S.token));lastLoad=Date.now();softRender();loadLoghi()}
   catch(e){if(!sessionLost(e)){S.dbState=S.got.p?"slow":"error";render()}}
@@ -435,7 +439,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     <div class="wrap">${navHtml("top")}</div></div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 19 · 11 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 20 · 11 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
