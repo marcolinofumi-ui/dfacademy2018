@@ -675,7 +675,7 @@ async function shareBlob(blob,name,type){const f=new File([blob],name,{type});
   try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==="AbortError")return}
   const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("File scaricato")}
 const dMon=d=>{if(!d)return"";const x=new Date(d+"T12:00:00");return["DOM","LUN","MAR","MER","GIO","VEN","SAB"][x.getDay()]+" "+String(x.getDate()).padStart(2,"0")+"/"+String(x.getMonth()+1).padStart(2,"0")};
-const LOGHI=[[/labico/i,"labico"],[/artena|montefortino/i,"artena"],[/torrenova/i,"torrenova"],[/\bpvp\b|perconti/i,"pvp"]];
+const LOGHI=[[/labico/i,"labico"],[/artena|montefortino/i,"artena"],[/torrenova/i,"torrenova"],[/\bpvp\b|perconti/i,"pvp"],[/trastevere/i,"trastevere"],[/lepanto/i,"lepanto"],[/spqv|velletri/i,"velletri"],[/libertas|centocelle/i,"centocelle"],[/frascati/i,"frascati"],[/pomezia/i,"pomezia"],[/dabliu/i,"eurdabliu"],[/rocca priora|\brpp\b/i,"roccapriora"],[/castle/i,"castlecup"]];
 const oppLogo=n=>{const ex=readLoghi().find(x=>String(x.parole||x.k).split(/[,|]/).map(w=>w.trim().toLowerCase()).filter(Boolean).some(w=>String(n||"").toLowerCase().indexOf(w)>=0));if(ex)return ex.img;const r=LOGHI.find(x=>x[0].test(n||""));return r?"loghi/"+r[1]+".png":""};
 async function posterCanvas(m){
   try{await document.fonts.load('800 100px "Big Shoulders Display"')}catch(e){}
