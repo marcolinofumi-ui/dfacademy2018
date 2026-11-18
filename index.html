@@ -383,6 +383,10 @@ const S={
 };
 try{const sv=JSON.parse(store.get("dfa-sess")||"null");if(sv&&sv.token){S.token=sv.token;S.me=sv;S.user=sv.user}}catch(e){}
 const isAdmin=()=>!!(S.me&&S.me.admin);
+const isTorneo=m=>!!m&&(/castle cup|torneo/i.test(m.avversario||"")||(Array.isArray(m.torneo)&&m.torneo.length>0));
+const torEntries=m=>{const a=Array.isArray(m.torneo)?m.torneo.slice():[];while(a.length<3)a.push({avv:"",gf:"",gs:""});return a};
+const torBox=m=>{const T=torEntries(m);const done=T.filter(t=>t.gf!==""&&t.gf!=null&&t.gs!==""&&t.gs!=null);const V=done.filter(t=>+t.gf>+t.gs).length,P=done.filter(t=>+t.gf===+t.gs).length,Sx=done.filter(t=>+t.gf<+t.gs).length;
+  return`<div class="stack" style="margin-top:12px;gap:10px"><div class="newbanner">🏆 <b>Torneo a ${T.length} partite</b> · convocazione unica, un risultato per ogni partita</div>${T.map((t,i)=>`<div class="panel stack" style="gap:8px;padding:12px"><b>Partita ${i+1}</b><div class="field" style="margin:0"><label for="t_a${i}">Avversario</label><input id="t_a${i}" type="text" data-tf="${i}:avv" value="${esc(t.avv||"")}" placeholder="Nome squadra"></div><div class="grid2"><div class="field" style="margin:0"><label for="t_f${i}">Gol fatti</label><input id="t_f${i}" type="number" min="0" inputmode="numeric" data-tf="${i}:gf" value="${esc(t.gf==null?"":t.gf)}"></div><div class="field" style="margin:0"><label for="t_s${i}">Gol subiti</label><input id="t_s${i}" type="number" min="0" inputmode="numeric" data-tf="${i}:gs" value="${esc(t.gs==null?"":t.gs)}"></div></div></div>`).join("")}<div class="sub" style="margin:0">Giocate: <b>${done.length} di ${T.length}</b> · V ${V} · P ${P} · S ${Sx}</div></div>`};
 const isDir=()=>!!(S.me&&S.me.dir);
 
 /* ---------- calcoli ---------- */
@@ -464,7 +468,7 @@ function render(){
   app.innerHTML=`<div class="bar"><div class="wrap"><img class="crest" src="${LOGO}" alt="Stemma DF Academy"><div class="team"><b>DF Academy</b><span>Annata 2018 · registro presenze</span></div>
     <div class="who"><span class="nm">${esc(((GRUPPI.find(g=>g[2]===S.user)||[])[1]||u.nome||"").toUpperCase())}</span><br><button data-a="logout" type="button">Esci</button></div></div>
     ${tabs.length?`<div class="wrap">${navHtml("top")}</div>`:""}</div>
-    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 31 · 11 nov 2026</p></main>${navHtml("bot")}`;
+    <main id="main" class="wrap">${statusNote()}${view()}<p class="ver">Versione app 32 · 11 nov 2026</p></main>${navHtml("bot")}`;
 }
 function statusNote(){
   if(S.dbState==="slow")return`<div class="note warn" style="margin-bottom:14px">Non riesco ad aggiornare i dati: controlla la connessione. Quello che vedi potrebbe non essere aggiornato.</div>`;
@@ -515,6 +519,20 @@ function trList(ps,dr,row){
     return`<h3 class="ghd${k===mine?" own":""}">${k===mine?"Il tuo gruppo":(k?"Gruppo ":"")+esc(nm)}<small>${l.length-ab} presenti · ${ab} assenti</small></h3><div class="list">${l.map(row).join("")}</div>`}).join("")}
 const NEW_UNTIL="2026-11-13";
 const isNewStat=()=>todayIso<=NEW_UNTIL;
+function resultsList(){const L=[];Object.keys(S.matches).forEach(id=>{const m=S.matches[id];if(!m.data||m.data>todayIso)return;
+    if(isTorneo(m)&&Array.isArray(m.torneo)&&m.torneo.length){m.torneo.forEach((t,i)=>{if(t.gf!==""&&t.gf!=null&&t.gs!==""&&t.gs!=null)L.push({d:m.data,o:i,avv:t.avv||(m.avversario+" · P"+(i+1)),campo:m.campo,gf:+t.gf,gs:+t.gs})})}
+    else if(m.golFatti!==""&&m.golFatti!=null&&m.golSubiti!==""&&m.golSubiti!=null)L.push({d:m.data,o:0,avv:m.avversario||"—",campo:m.campo,gf:+m.golFatti,gs:+m.golSubiti})});
+  return L.sort((a,b)=>a.d===b.d?a.o-b.o:a.d<b.d?-1:1)}
+function resultsBox(){const L=resultsList();if(!L.length)return"";
+  const sm=l=>{const V=l.filter(x=>x.gf>x.gs).length,P=l.filter(x=>x.gf===x.gs).length,Sx=l.filter(x=>x.gf<x.gs).length,gf=l.reduce((a,x)=>a+x.gf,0),gs=l.reduce((a,x)=>a+x.gs,0);return{n:l.length,V,P,S:Sx,gf,gs}};
+  const A=sm(L),C=sm(L.filter(x=>x.campo!=="trasferta")),T=sm(L.filter(x=>x.campo==="trasferta"));
+  const dr=A.gf-A.gs,fm=v=>(Math.round(v*10)/10).toString().replace(".",","),col=x=>x.gf>x.gs?"#1f9d55":x.gf===x.gs?"#e0a800":"#d6455d";
+  const line=(t,x)=>`<div class="row" style="justify-content:space-between"><span>${t} <span class="sub" style="margin:0">(${x.n})</span></span><span><b>${x.V}V ${x.P}P ${x.S}S</b> · gol ${x.gf}–${x.gs}</span></div>`;
+  return`<div class="panel stack" style="gap:10px"><div class="row" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">Risultati</h3><span class="sub" style="margin:0">${A.n} partite</span></div>
+   <div class="row" style="justify-content:space-between;align-items:baseline"><b class="num" style="font-size:28px">${A.V}V · ${A.P}P · ${A.S}S</b><span class="sub" style="margin:0">differenza reti <b>${dr>0?"+":""}${dr}</b></span></div>
+   <div class="sub" style="margin:0">Gol ${A.gf} fatti · ${A.gs} subiti · medie ${fm(A.gf/A.n)} e ${fm(A.gs/A.n)} a partita</div>
+   <div style="border-top:1px solid var(--line);padding-top:8px" class="stack">${line("In casa",C)}${line("In trasferta",T)}</div>
+   <div style="border-top:1px solid var(--line);padding-top:8px" class="stack"><b>Ultime partite</b>${L.slice(-5).reverse().map(x=>`<div class="row" style="justify-content:space-between"><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${col(x)};margin-right:8px"></i>${esc(x.avv)}</span><b class="num">${x.gf}–${x.gs}</b></div>`).join("")}</div></div>`}
 function statView(){
   const ps=roster();const ids=Object.keys(S.trainings).filter(d=>d<=todayIso);
   const bar=x=>`<div style="height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px"><div style="height:100%;width:${x.pct}%;background:var(--yellow,#ffe500)"></div></div>`;
@@ -529,6 +547,7 @@ function statView(){
     ${isNewStat()?`<div class="newbanner">🆕 <b>Novità:</b> da oggi trovi qui le percentuali di presenza agli allenamenti e alle partite.</div>`:""}
     ${ids.length?block("Presenza agli allenamenti",ids.length+" allenamenti",tr(ps),grp.map(g=>Object.assign({n:g.n},tr(g.l)))):`<div class="panel"><h3>Presenza agli allenamenti</h3><p style="margin:0">Compare dopo il primo allenamento registrato.</p></div>`}
     ${block("Presenza alle partite","weekend giocati",pm(ps),grp.map(g=>Object.assign({n:g.n},pm(g.l))))}
+    ${resultsBox()}
     <p class="sub" style="margin:0">Allenamenti: presenti ÷ (giocatori × allenamenti). Partite: weekend giocati ÷ weekend con partite, compreso lo storico precedente all'app.</p></div>`}
 function trainingView(){
   const ps=roster();const days=weekDays(S.trWeek);
@@ -578,7 +597,7 @@ function toggleConv(pid,mid){
       const m=S.matches[mid];if(!m)throw new Error("Partita non trovata: ricarica la pagina");
       const gi=Object.assign({},m.giocatori||{});
       if(had)delete gi[pid];else if(!gi[pid])gi[pid]={min:0,assente:false};
-      const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:m.avversario||"",campo:m.campo||"casa",golFatti:m.golFatti==null?"":m.golFatti,golSubiti:m.golSubiti==null?"":m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
+      const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:m.avversario||"",campo:m.campo||"casa",luogo:m.luogo||"",dirigente:m.dirigente||"",golFatti:m.golFatti==null?"":m.golFatti,golSubiti:m.golSubiti==null?"":m.golSubiti,torneo:Array.isArray(m.torneo)?m.torneo:[],durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
       await api.doc("matches/"+mid).set(body);
       convPend.splice(convPend.indexOf(it),1);applyPend();render();
     }catch(e){
@@ -738,14 +757,14 @@ function matchForm(){
   const conv=gkFirst(ps.filter(p=>m.giocatori[p.id]));
   const rowOf=p=>{const g=m.giocatori[p.id];const w=weekInfo(p.id,mon);const ok=g&&!g.assente;return`<tr class="on"><td><label><b>${esc(fullName(p))}</b>${isGk(p.id)?" 🧤":""}</label><br><span class="badge ${ST[w.st].c}">${w.count}/3 ${w.st==="doppia"?"· doppia":w.st==="conv"?"· convocabile":"· non conv."}</span>${g.assente?"":`<button type="button" class="btn small rit${g.ritardo?" on":""}" data-a="mrit" data-v="${p.id}" aria-pressed="${!!g.ritardo}" style="margin-left:6px">⏱ ${g.ritardo?"In ritardo":"Ritardo?"}</button>`}</td>
       <td><div class="seg" role="group" aria-label="Presenza ${esc(fullName(p))}"><button type="button" class="p" data-a="mpres" data-v="${p.id}" aria-pressed="${!g.assente}">Presente</button><button type="button" class="a" data-a="mabs" data-v="${p.id}" aria-pressed="${!!g.assente}">Assente</button></div></td>
-      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${ok?esc(g.min):""}" ${ok?"":"disabled"} placeholder="Min" aria-label="Minuti ${esc(fullName(p))}"><span class="un">min</span><input class="mini num gol" type="number" min="0" max="50" inputmode="numeric" data-pg="${p.id}" value="${ok&&+g.gol?esc(g.gol):""}" ${ok?"":"disabled"} placeholder="Gol" aria-label="Gol ${esc(fullName(p))}"><span class="un g">⚽</span></div></td></tr>`};
+      <td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input class="mini num gol" type="number" min="0" max="50" inputmode="numeric" data-pg="${p.id}" value="${ok&&+g.gol?esc(g.gol):""}" ${ok?"":"disabled"} placeholder="Gol" aria-label="Gol ${esc(fullName(p))}"><span class="un g">⚽</span><input class="mini num" type="number" min="0" max="120" inputmode="numeric" data-pm="${p.id}" value="${ok?esc(g.min):""}" ${ok?"":"disabled"} placeholder="Min" aria-label="Minuti ${esc(fullName(p))}"><span class="un">min</span></div></td></tr>`};
 
   return`<div class="stack"><div class="head"><div><h2>${isDir()?"Risultato e minuti":m.id?"Modifica partita":"Nuova partita"}</h2><p class="sub">${isDir()?"Inserisci risultato, minuti, gol, assenti e ritardi.":"Spunta i convocati, poi inserisci i minuti."} Accanto a ogni nome trovi lo stato della settimana ${weekLabel(mon)}.</p></div>
     <button class="btn" type="button" data-a="closematch">Torna all'elenco</button></div>
     ${isDir()?`<div class="panel stack" style="gap:14px">
       <div><b style="font-size:20px">${oppLogo(m.avversario)?`<img class="olg" src="${oppLogo(m.avversario)}" alt="">`:""}${esc(m.avversario||"—")}</b><div class="sub" style="margin:4px 0 0;line-height:1.7">📅 ${m.data?esc(fmtDay(m.data)):""}${m.ora?" · 🕙 "+esc(m.ora):""} · ${m.campo==="trasferta"?"trasferta":"casa"}${m.luogo?"<br>📍 "+esc(m.luogo):""}</div></div>
-      <div class="grid2"><div class="field" style="margin:0"><label for="m_gf">Gol fatti</label><input id="m_gf" type="number" min="0" inputmode="numeric" data-f="golFatti" value="${esc(m.golFatti)}"></div>
-        <div class="field" style="margin:0"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div></div>
+      ${isTorneo(m)?torBox(m):`<div class="grid2"><div class="field" style="margin:0"><label for="m_gf">Gol fatti</label><input id="m_gf" type="number" min="0" inputmode="numeric" data-f="golFatti" value="${esc(m.golFatti)}"></div>
+        <div class="field" style="margin:0"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div></div>`}
       ${m.da?`<div class="note">Ultima modifica: ${esc(m.da)}${m.quando?" "+esc(fmtWhen(m.quando)):""}</div>`:""}
     </div>`:`    <div class="panel stack" style="gap:14px">
       <div class="field" style="margin:0"><label for="m_avv">Avversario</label><input id="m_avv" data-f="avversario" value="${esc(m.avversario)}" placeholder="Es. ASD Roma Nord" style="font-size:20px;font-weight:700"></div>
@@ -760,8 +779,8 @@ function matchForm(){
       <div style="border-top:1px solid var(--line);padding-top:12px"><button type="button" class="btn small" data-a="detopen" style="width:100%;justify-content:space-between">Risultato e durata <span>${S.detOpen?"▴ chiudi":"▾ apri"}</span></button>
       ${S.detOpen?`<div class="grid2" style="margin-top:12px">
         <div class="field"><label for="m_dur">Durata (minuti)</label><input id="m_dur" type="number" min="1" max="120" inputmode="numeric" data-f="durata" value="${esc(m.durata)}"></div>
-        <div class="field"><label for="m_gf">Gol fatti</label><input id="m_gf" type="number" min="0" inputmode="numeric" data-f="golFatti" value="${esc(m.golFatti)}"></div>
-        <div class="field"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div></div>`:""}</div>
+        ${isTorneo(m)?"":`<div class="field"><label for="m_gf">Gol fatti</label><input id="m_gf" type="number" min="0" inputmode="numeric" data-f="golFatti" value="${esc(m.golFatti)}"></div>
+        <div class="field"><label for="m_gs">Gol subiti</label><input id="m_gs" type="number" min="0" inputmode="numeric" data-f="golSubiti" value="${esc(m.golSubiti)}"></div>`}</div>${isTorneo(m)?torBox(m):""}`:""}</div>
     </div>`}
     <div class="row" style="justify-content:space-between"><h3 style="margin:0">Giocatori · <span class="num" id="convcount">${conv.length}</span> convocati</h3>
       ${isDir()?"":`<div class="row"><button class="btn small" type="button" data-a="copyconv">Copia per WhatsApp</button><button class="btn small" type="button" data-a="expimg">Esporta immagine</button></div>`}</div>
@@ -891,7 +910,7 @@ document.addEventListener("click",async e=>{
   case"rcconv":toggleConv(v,el.dataset.m);break
   case"savematch":{const m=S.matchEdit;if(!m.data){toast("Inserisci la data della partita");return}
     const gi={};Object.entries(m.giocatori).forEach(([pid,g])=>{if(S.players[pid])gi[pid]={min:g.assente?0:Math.max(0,+g.min||0),assente:!!g.assente,gol:g.assente?0:Math.max(0,+g.gol||0),ritardo:!g.assente&&!!g.ritardo}});
-    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,luogo:(m.luogo||"").trim(),dirigente:(m.dirigente||"").trim(),golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
+    const body={data:m.data,ora:m.ora||"",mister:m.mister||"",avversario:(m.avversario||"").trim(),campo:m.campo,luogo:(m.luogo||"").trim(),dirigente:(m.dirigente||"").trim(),golFatti:m.golFatti===""?"":+m.golFatti,golSubiti:m.golSubiti===""?"":+m.golSubiti,torneo:isTorneo(m)?torEntries(m).map(t=>({avv:String(t.avv||"").trim(),gf:t.gf===""||t.gf==null?"":+t.gf,gs:t.gs===""||t.gs==null?"":+t.gs})):[],durata:+m.durata||45,giocatori:gi,da:((S.me&&S.me.nome)||""),ts:Date.now()};
     const ok=await write(db=>(m.id?db.doc("matches/"+m.id):db.collection("matches").doc()).set(body),"Partita salvata");if(ok){S.matchEdit=null;S.pending=false;render()}break}
   case"delmatch":if(el.dataset.c!=="1"){el.dataset.c="1";el.textContent="Conferma eliminazione";return}
     if(await write(db=>db.doc("matches/"+S.matchEdit.id).delete(),"Partita eliminata")){S.matchEdit=null;render()}break;
@@ -953,6 +972,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("tr
 const isKb=el=>el&&(el.tagName==="TEXTAREA"||(el.tagName==="INPUT"&&!/^(checkbox|radio|button|submit|file|range|color|date|time)$/.test(el.type)));
 if(matchMedia("(pointer:coarse)").matches){document.addEventListener("focusin",e=>{if(isKb(e.target))document.body.classList.add("kb")});document.addEventListener("focusout",()=>setTimeout(()=>{if(!isKb(document.activeElement))document.body.classList.remove("kb")},120))}
 document.addEventListener("input",e=>{const t=e.target;const m=S.matchEdit;
+  if(m&&t.dataset.tf){const[i,k]=t.dataset.tf.split(":");m.torneo=torEntries(m);m.torneo[+i][k]=t.value;const d=m.torneo.filter(x=>x.gf!==""&&x.gs!=="");m.golFatti=d.length?d.reduce((a,x)=>a+(+x.gf||0),0):"";m.golSubiti=d.length?d.reduce((a,x)=>a+(+x.gs||0),0):"";return}
   if(m&&t.dataset.f){m[t.dataset.f]=t.value;return}
   if(m&&t.dataset.pm&&m.giocatori[t.dataset.pm]){m.giocatori[t.dataset.pm].min=t.value;return}
   if(m&&t.dataset.pg&&m.giocatori[t.dataset.pg]){m.giocatori[t.dataset.pg].gol=t.value;return}
